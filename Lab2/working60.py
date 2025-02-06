@@ -10,7 +10,7 @@ import map_
 
 import sympy as sp
 
-
+# This was working as of 2/6
 board = rrc.Board()
 start = True
 

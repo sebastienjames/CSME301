@@ -65,15 +65,17 @@ class ServoGroup:
         #check for illegal (colliding) positions and break if they occur
         if self.max_pos > self.zero_pos:
             if pos > self.max_pos or pos < self.min_pos:
-                print("position illegal?", pos, "for", self.name)
+                # print("position illegal?", pos, "for", self.name)
                # raise Exception
+               pass
         else:
          #   self.max_pos > self.zero_pos:
             if pos > self.max_pos or pos < self.min_pos:
-                print("position illegal?", pos, "for", self.name)
+                # print("position illegal?", pos, "for", self.name)
                # raise Exception
+               pass
 
-        print ("pos is ", pos, "degree was", degree)
+        # print ("pos is ", pos, "degree was", degree)
         return pos
 
 #just to organize
@@ -621,7 +623,6 @@ def strideAW(distance,adjust):
     
     time.sleep(delay)
     
-    print('frame4')
     set_degree(A2,angs[3][0][0],stepTime)
     set_degree(A3,angs[3][0][1],stepTime)
     set_degree(B2,angs[3][1][0],stepTime)
@@ -659,7 +660,6 @@ def strideAS(distance, adjust):
         Btarget -= int((5 - adjust)*13)
 
        
-    print('frame1')
     set_degree(A2,angs[0][0][0],stepTime)
     set_degree(A3,angs[0][0][1],stepTime)
     set_degree(B2,angs[0][1][0],stepTime)
@@ -675,7 +675,6 @@ def strideAS(distance, adjust):
 
     time.sleep(delay)
     
-    print('frame2')
     set_degree(A2,angs[1][0][0],stepTime)
     set_degree(A3,angs[1][0][1],stepTime)
     set_degree(B2,angs[1][1][0],stepTime)
@@ -696,7 +695,6 @@ def strideAS(distance, adjust):
 
     time.sleep(delay)
 
-    print('frame3')
     set_degree(A2,angs[2][0][0],stepTime)
     set_degree(A3,angs[2][0][1],stepTime)
     set_degree(B2,angs[2][1][0],stepTime)
@@ -712,7 +710,6 @@ def strideAS(distance, adjust):
     
     time.sleep(delay)
     
-    print('frame4')
     set_degree(A2,angs[3][0][0],stepTime)
     set_degree(A3,angs[3][0][1],stepTime)
     set_degree(B2,angs[3][1][0],stepTime)
@@ -904,20 +901,12 @@ def crabWalk(s, target, allowance):
         strideAW(10, adjust)
 #initialize and setup
 
-#first thing we do is get her in a neat pose
-resetPos()
 
 #make the sonar
 s = sonar.Sonar()
-s.setRGBMode(0)
-s.setPixelColor(1, (0, 0, 255))
-s.setPixelColor(0,(0,0,255))
-s.show()
-time.sleep(0.1)
-s.startSymphony()
 
 #we may need to be crab ready
-crabReady()
+# crabReady()
 #resetPos()
 
 
@@ -1043,30 +1032,32 @@ def main():
     
     
     instructions = breadth_first_search(your_map, (x, y), (goal_x, goal_y))
-
+    print(instructions)
     start = instructions[0]
     current_direction = d
 
     for c in instructions[1:]:
+        print("Current direction", current_direction)
         if start[0] > c[0]: # UP
             go_direction(current_direction, 1)
             walk()
+            print("Going up", c, 1)
         elif start[0] < c[0]: #DOWN
             go_direction(current_direction, 3)
             walk()
-            print(c, 3)
+            print("Going down", c, 3)
         elif start[1] > c[1]: # LEFT
             go_direction(current_direction, 4)
             walk()
-            print(c, 4)
+            print("Going left", c, 4)
         else:
             go_direction(current_direction, 2)
             walk()
-            print(c, 2)
+            print("Going right", c, 2)
 
         start = c
 
 
 if __name__ == "__main__":
     main()
-    crabReady()
+    # crabReady()

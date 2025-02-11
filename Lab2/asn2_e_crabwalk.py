@@ -420,12 +420,6 @@ def strideATEST(distance):
     time.sleep(delay)
 
 
-
-
-
-
-
-
 def strideA(distance):
     angs = genAngles(body,body_height,step_limit, distance, step_height)
     stepTime = 0.5 #0.15
@@ -738,55 +732,6 @@ def strideAS(distance, adjust):
     time.sleep(delay)
 
 
-
-# def set_degree(servo, degree, speed):
-def degTest(servo):
-    print("resetting")
-  #  resetPos()
-    time.sleep(3)
-   # print("going through -90 to 90 degrees")
-    deg = -90
-    print("degree", deg)
-    set_degree(servo,deg,1)
-    time.sleep(3)
-    deg = -45
-    print("degree", deg)
-    set_degree(servo,deg,1)
-    time.sleep(3)
-    deg = 0
-    print("degree", deg)
-    set_degree(servo,deg,1)
-    time.sleep(3)
-    deg = 45
-    print("degree", deg)
-    set_degree(servo,deg,1)
-
-def degTest2(servos):
-    print("resetting")
-  #  resetPos()
-    time.sleep(3)
-   # print("going through -90 to 90 degrees")
-    deg = -90
-    print("degree", deg)
-    for servo in servos:
-        set_degree(servo,deg,1)
-    time.sleep(3)
-    deg = -45
-    print("degree", deg)
-    for servo in servos:
-        set_degree(servo,deg,1)
-    time.sleep(3)
-    deg = 0
-    print("degree", deg)
-    for servo in servos:
-        set_degree(servo,deg,1)
-    time.sleep(3)
-    deg = 45
-    print("degree", deg)
-    for servo in servos:
-        set_degree(servo,deg,1)
-    
-
 def Joint3out():
     board.bus_servo_set_position(0.25, [[D3.id,350]])
     board.bus_servo_set_position(0.25, [[E3.id,350]])
@@ -936,52 +881,6 @@ def Esequence():
     ACEDown()
     time.sleep(0.5)
 
-
-def countWaves(sen):
-    #i have to be honest i chose this number at near random
-    precision = 50
-    #record first measurement
-    last = sen.getDistance()
-    waves = 0
-    #keeps track of if wave is up or down
-    waveUp = False
-    time.sleep(0.5)
-    for i in range(9):
-        print("Last:", last)
-        curr = sen.getDistance()
-        print("Curr:", curr)
-        if abs(last - curr) > precision:
-            if waveUp:
-                 waves += 1
-                 waveUp = False
-            else: 
-                waveUp = True
-        last = curr
-        print("wave count =", waves)
-        time.sleep(0.5)
-    print("waves is", waves)
-    return waves
-
-def waveControl(s):
-    print("reading waves")
-    waves = countWaves(s)
-    print("doing stuff")
-    if waves == 1:
-        #turn right
-        print("turning right")
-        right90()
-    if waves == 2:
-        #turn left
-        print("turning left")
-        left90()
-    if waves == 3:
-        #turn around
-        #doing it to the left. why not?
-        print("turning around")
-        left90()
-        left90()
-
-
 def crabWalk(s, target, allowance):
     #read sensor
   #  print("reading")
@@ -1040,30 +939,6 @@ def measure_distance():
     print(x)
     x.sort()
     return x[4]
-
-def breadth_first_search(time_map, start, end):
-	queue = deque([(start,[start])])
-	visited = set()
-
-	if start == end:
-		return [start]
-
-	while queue:
-		node, path = queue.popleft()
-
-		if node == end:
-			return path
-		
-		if node not in visited:
-			visited.add(node)
-
-		for neighbor in expand(node, time_map):
-			if neighbor not in visited:
-
-				visited.add(neighbor)
-				queue.append((neighbor, path + [neighbor]))
-
-	return None
 
 def get_neighbors(m, node):
     n = []

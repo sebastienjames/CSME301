@@ -470,6 +470,7 @@ def get_directions(instructions):
         elif start[0] < c[0]: #DOWN
             # turn down
             # walk
+            print()
             print(c, 3)
             pass
         elif start[1] > c[1]: # LEFT

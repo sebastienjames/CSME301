@@ -195,29 +195,6 @@ def measure_distance():
     x.sort()
     return x[4]
 
-def breadth_first_search(time_map, start, end):
-	queue = deque([(start,[start])])
-	visited = set()
-
-	if start == end:
-		return [start]
-
-	while queue:
-		node, path = queue.popleft()
-
-		if node == end:
-			return path
-		
-		if node not in visited:
-			visited.add(node)
-
-		for neighbor in expand(node, time_map):
-			if neighbor not in visited:
-
-				visited.add(neighbor)
-				queue.append((neighbor, path + [neighbor]))
-
-	return None
 
 def get_neighbors(m, node):
     n = []
@@ -304,18 +281,18 @@ def main():
 
     for c in instructions[1:]:
         if start[0] > c[0]: # UP
-            go_direction(d, 1)
+            go_direction(current_direction, 1)
             walk()
         elif start[0] < c[0]: #DOWN
-            go_direction(d, 3)
+            go_direction(current_direction, 3)
             walk()
             print(c, 3)
         elif start[1] > c[1]: # LEFT
-            go_direction(d, 4)
+            go_direction(current_direction, 4)
             walk()
             print(c, 4)
         else:
-            go_direction(d, 2)
+            go_direction(current_direction, 2)
             walk()
             print(c, 2)
 

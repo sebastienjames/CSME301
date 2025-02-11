@@ -912,8 +912,29 @@ s = sonar.Sonar()
 
 def walk():
     crabReady()
+    if not start:
+        ("resetting and stopping")
+        crabReady()
+        
+        time.sleep(1)
+        print('breaking loop')
+        return
     strideATEST(stride)
+    if not start:
+        ("resetting and stopping")
+        crabReady()
+        
+        time.sleep(1)
+        print('breaking loop')
+        return
     strideATEST(stride)
+    if not start:
+        ("resetting and stopping")
+        crabReady()
+        
+        time.sleep(1)
+        print('breaking loop')
+        return
     strideATEST(stride-2)
 
 
@@ -983,9 +1004,12 @@ def breadth_first_search(time_map, start, end):
     
              
 def go_direction(curr, to):
+    print("Going from", curr, "to", to)
     if curr - to == 0:
+        print("Staying")
         return
     if curr - to == 1 or curr - to == -3:
+        print("Left turn")
         ACEDown()
         BDFDown()
         board.bus_servo_set_position(0.25, [[A1,500]])
@@ -997,6 +1021,7 @@ def go_direction(curr, to):
         left90()
         return
     if curr - to == -1 or curr - to == 3:
+        print("Right turn")
         ACEDown()
         BDFDown()
         board.bus_servo_set_position(0.25, [[A1,500]])
@@ -1007,6 +1032,7 @@ def go_direction(curr, to):
         board.bus_servo_set_position(0.25, [[F1,500]])
         right90()
     else:
+        print("Around")
         ACEDown()
         BDFDown()
         board.bus_servo_set_position(0.25, [[A1,500]])
@@ -1037,25 +1063,39 @@ def main():
     current_direction = d
 
     for c in instructions[1:]:
+        if not start:
+            ("resetting and stopping")
+            crabReady()
+            print('breaking loop')
+            return
         print("Current direction", current_direction)
         if start[0] > c[0]: # UP
-            go_direction(current_direction, 1)
-            walk()
             print("Going up", c, 1)
+            
+            go_direction(current_direction, 1)
+            current_direction = 1
+            walk()
+        
         elif start[0] < c[0]: #DOWN
-            go_direction(current_direction, 3)
-            walk()
             print("Going down", c, 3)
+            go_direction(current_direction, 3)
+            current_direction = 3
+            walk()
+            
         elif start[1] > c[1]: # LEFT
-            go_direction(current_direction, 4)
-            walk()
             print("Going left", c, 4)
-        else:
-            go_direction(current_direction, 2)
+            go_direction(current_direction, 4)
+            current_direction = 4
             walk()
+        else:
             print("Going right", c, 2)
+            go_direction(current_direction, 2)
+            current_direction = 2
+            walk()
+            
 
         start = c
+        
 
 
 if __name__ == "__main__":

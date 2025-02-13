@@ -540,13 +540,11 @@ def strideD(distance):
     time.sleep(delay)
 
 def strideAW(distance,adjust):
+
+    
     # adjust is an absolute value in centimeters
     
-    # Geometric analysis for extra stride distance
-    offset = math.sqrt(distance ** 2 + adjust ** 2) # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
-
-    # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
-    angs = genAngles(body,body_height,step_limit, distance+offset, step_height)
+    
 
     stepTime = 0.25
     delay = 0.5
@@ -562,6 +560,12 @@ def strideAW(distance,adjust):
         Dtarget += int((5 - adjust)*10)
         Ftarget += int((5 - adjust)*10)
         Btarget += int((5 - adjust)*10)
+
+    # Geometric analysis for extra stride distance
+    offset = math.sqrt(distance ** 2 + adjust ** 2) # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
+    print("offset:", offset)
+    # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
+    angs = genAngles(body,body_height,step_limit, offset, step_height)
 
     # Frame 1
     set_degree(B2,angs[0][1][0],stepTime)
@@ -633,11 +637,7 @@ def strideAW(distance,adjust):
 
 def strideAS(distance, adjust):
 
-    # Geometric analysis for extra stride distance
-    offset = math.sqrt(distance ** 2 + adjust ** 2) # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
 
-    # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
-    angs = genAngles(body,body_height,step_limit, distance+offset, step_height)
 
     stepTime = 0.25
     delay = 0.5
@@ -653,6 +653,12 @@ def strideAS(distance, adjust):
         Dtarget -= int((5 - adjust)*13)
         Ftarget -= int((5 - adjust)*13)
         Btarget -= int((5 - adjust)*13)
+
+    # Geometric analysis for extra stride distance
+    offset = math.sqrt(distance ** 2 + adjust ** 2) # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
+    print("offset:", offset)
+    # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
+    angs = genAngles(body,body_height,step_limit, offset, step_height)
 
     # Frame 1
     set_degree(B2,angs[0][1][0],stepTime)
@@ -988,8 +994,8 @@ def turnPose():
 
 def shiftCrabTurn():
     # Leg Order A,D,F,C ???? Maybe A, D, C, F??
-    stepTime = 0.1
-    delay = 0.15
+    stepTime = 0.15
+    delay = 0.25
 
     # Verify crabPose()
     crabPose()
@@ -1033,8 +1039,8 @@ def shiftTurnCrab():
 
     angs = genAngles(body, 13.1, 16, 12, step_height)
 
-    stepTime = 0.1
-    delay = 0.15
+    stepTime = 0.15
+    delay = 0.25
 
     # Verify turnPose()
     turnPose()
@@ -1073,14 +1079,8 @@ def shiftTurnCrab():
     # Verify crabPose()
     crabPose()
 
-# Run the shifting commands
 
-shiftCrabTurn()
-time.sleep(2)
-shiftTurnCrab()
-time.sleep(2)
-
-def crabWalk(s, target, allowance):
+def crabWalk(s, target, allowance, distance):
     #read sensor
   #  print("reading")
     dist = s.getDistance()
@@ -1092,15 +1092,15 @@ def crabWalk(s, target, allowance):
     adjust = (abs(allowance - error))/10
     #if we are within allowance
     if (error < allowance):
-        strideA(12)
+        strideA6(distance)
     #we are too close
 
     elif (dist - target < 0):
       
-        strideAS(12, adjust)
+        strideAS(distance, adjust)
     #dist - target > 0 - we are too far
     else:
-        strideAW(12, adjust)
+        strideAW(distance, adjust)
 #initialize and setup
 
 
@@ -1118,7 +1118,14 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-    strideA6(stride)
+
+    if s.getDistance() > 350:
+        strideA6(stride)
+    else:
+        print("Reading", s.getDistance())
+        crabWalk(s, 233, 20, stride)
+
+
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1126,7 +1133,11 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-    strideA6(stride)
+    if s.getDistance() > 350:
+        strideA6(stride)
+    else:
+        print("Reading", s.getDistance())
+        crabWalk(s, 233, 20, stride)
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1134,7 +1145,11 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-    strideA6(stride-2)
+    # if s.getDistance() > 350:
+    strideA6(stride-4)
+    # else:
+    #     print("Reading", s.getDistance())
+    #     crabWalk(s, 233, 20, stride-2)
     time.sleep(0.3)
     crabPose()    
 
@@ -1211,39 +1226,20 @@ def go_direction(curr, to):
         return
     if curr - to == 1 or curr - to == -3:
         print("Left turn")
-        ACEDown()
-        BDFDown()
-        board.bus_servo_set_position(0.25, [[A1,500]])
-        board.bus_servo_set_position(0.25, [[B1,500]])
-        board.bus_servo_set_position(0.25, [[C1,500]])
-        board.bus_servo_set_position(0.25, [[D1,500]])
-        board.bus_servo_set_position(0.25, [[E1,500]])
-        board.bus_servo_set_position(0.25, [[F1,500]])
+        shiftCrabTurn()
         left90()
+        shiftTurnCrab()
         return
     if curr - to == -1 or curr - to == 3:
         print("Right turn")
-        ACEDown()
-        BDFDown()
-        board.bus_servo_set_position(0.25, [[A1,500]])
-        board.bus_servo_set_position(0.25, [[B1,500]])
-        board.bus_servo_set_position(0.25, [[C1,500]])
-        board.bus_servo_set_position(0.25, [[D1,500]])
-        board.bus_servo_set_position(0.25, [[E1,500]])
-        board.bus_servo_set_position(0.25, [[F1,500]])
+        shiftCrabTurn()
         right90()
+        shiftTurnCrab()
     else:
         print("Around")
-        ACEDown()
-        BDFDown()
-        board.bus_servo_set_position(0.25, [[A1,500]])
-        board.bus_servo_set_position(0.25, [[B1,500]])
-        board.bus_servo_set_position(0.25, [[C1,500]])
-        board.bus_servo_set_position(0.25, [[D1,500]])
-        board.bus_servo_set_position(0.25, [[E1,500]])
-        board.bus_servo_set_position(0.25, [[F1,500]])
-        right90()
-        right90()
+        shiftCrabTurn()
+        turn180()
+        shiftTurnCrab()
 
 
 ## Main program
@@ -1286,6 +1282,7 @@ def main():
         elif start[1] > c[1]: # LEFT
             print("Going left", c, 4)
             go_direction(current_direction, 4)
+            
             current_direction = 4
             walk()
         else:
@@ -1296,9 +1293,15 @@ def main():
             
 
         start = c
+
+    go_direction(current_direction, goal_d)
         
 
 
 if __name__ == "__main__":
     main()
     crabPose()
+    # board.bus_servo_set_position(0.25, [[21, 865]]) # Forward
+    # board.bus_servo_set_position(0.25, [[21, 1000-865]]) # Backward
+    # board.bus_servo_set_position(0.25, [[21, 500]]) # Right
+

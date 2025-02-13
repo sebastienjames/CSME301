@@ -543,7 +543,7 @@ def strideAW(distance,adjust):
     # adjust is an absolute value in centimeters
     
     # Geometric analysis for extra stride distance
-    offset = # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
+    offset = math.sqrt(distance ** 2 + adjust ** 2) # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
 
     # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
     angs = genAngles(body,body_height,step_limit, distance+offset, step_height)
@@ -634,7 +634,7 @@ def strideAW(distance,adjust):
 def strideAS(distance, adjust):
 
     # Geometric analysis for extra stride distance
-    offset = # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
+    offset = math.sqrt(distance ** 2 + adjust ** 2) # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
 
     # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
     angs = genAngles(body,body_height,step_limit, distance+offset, step_height)

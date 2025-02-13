@@ -6,7 +6,7 @@ import math
 import os
 import ros_robot_controller_sdk as rrc
 import sonar
-import map_
+import map_301
 
 import sympy as sp
 
@@ -1245,7 +1245,7 @@ def go_direction(curr, to):
 ## Main program
 
 def main():
-    your_map = map_.CSME301Map()
+    your_map = map_301.CSME301Map()
 
     your_map.printObstacleMap()
     your_map.costmap_size_col

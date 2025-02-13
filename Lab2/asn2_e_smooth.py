@@ -543,10 +543,10 @@ def strideAW(distance,adjust):
     # adjust is an absolute value in centimeters
     
     # Geometric analysis for extra stride distance
-    offset = # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
+    offset = 0 # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
 
     # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
-    angs = genAngles(body,body_height,step_limit, distance+offset, step_height)
+    angs = genAngles(body,body_height,step_limit, offset, step_height)
 
     stepTime = 0.25
     delay = 0.5
@@ -634,7 +634,7 @@ def strideAW(distance,adjust):
 def strideAS(distance, adjust):
 
     # Geometric analysis for extra stride distance
-    offset = # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
+    offset = 0 # hypotenuse for triangle of stride and adjust (a^2 + b^2)^(1/2), for error purposes should be set to 0 in every other case
 
     # angles should generate with distance + offset, there is a chance that it could be an illegal angle? in that event the code could break but if it's a 5-12-13 triangle then we should be okay
     angs = genAngles(body,body_height,step_limit, distance+offset, step_height)
@@ -988,8 +988,8 @@ def turnPose():
 
 def shiftCrabTurn():
     # Leg Order A,D,F,C ???? Maybe A, D, C, F??
-    stepTime = 0.1
-    delay = 0.15
+    stepTime = 0.05
+    delay = 0.1
 
     # Verify crabPose()
     crabPose()
@@ -999,6 +999,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[A3.id,650]])
     board.bus_servo_set_position(stepTime, [[A1,500]])
+    time.sleep(delay)
 
     # A down, D up
     set_degree(A2,0,stepTime)
@@ -1006,6 +1007,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[D3.id,350]])
     board.bus_servo_set_position(stepTime, [[D1,500]])
+    time.sleep(delay)
 
     # D down, F up
     set_degree(D2,0,stepTime)
@@ -1013,6 +1015,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[F3.id,350]])
     board.bus_servo_set_position(stepTime, [[F1,500]])
+    time.sleep(delay)
 
     # F down, C up
     set_degree(F2,0,stepTime)
@@ -1020,6 +1023,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[C3.id,650]])
     board.bus_servo_set_position(stepTime, [[C1,500]])
+    time.sleep(delay)
 
     # C down
     set_degree(C2,0,stepTime)
@@ -1033,8 +1037,8 @@ def shiftTurnCrab():
 
     angs = genAngles(body, 13.1, 16, 12, step_height)
 
-    stepTime = 0.1
-    delay = 0.15
+    stepTime = 0.05
+    delay = 0.1
 
     # Verify turnPose()
     turnPose()
@@ -1044,6 +1048,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(A3,angs[1][0][1],stepTime)
     board.bus_servo_set_position(stepTime, [[A1,325]])
+    time.sleep(delay)
 
     # A down, D up
     set_degree(A2,angs[1][0][0],stepTime)
@@ -1051,6 +1056,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(D3,angs[3][3][1],stepTime)
     board.bus_servo_set_position(stepTime, [[D1,325]])
+    time.sleep(delay)
 
     # D down, F up
     set_degree(D2,angs[3][3][0],stepTime)
@@ -1058,6 +1064,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(F3,angs[3][5][1],stepTime)
     board.bus_servo_set_position(stepTime, [[F1,685]])
+    time.sleep(delay)
 
     # F down, C up
     set_degree(F2,angs[3][5][0],stepTime)
@@ -1065,6 +1072,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(C3,angs[1][2][1],stepTime)
     board.bus_servo_set_position(stepTime, [[C1,685]])
+    time.sleep(delay)
 
     # C down
     set_degree(C2,angs[1][2][0],stepTime)
@@ -1299,6 +1307,6 @@ def main():
         
 
 
-if __name__ == "__main__":
-    main()
-    crabPose()
+# if __name__ == "__main__":
+#     main()
+#     crabPose()

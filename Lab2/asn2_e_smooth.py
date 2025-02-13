@@ -1005,6 +1005,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[A3.id,650]])
     board.bus_servo_set_position(stepTime, [[A1,500]])
+    time.sleep(delay)
 
     # A down, D up
     set_degree(A2,0,stepTime)
@@ -1012,6 +1013,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[D3.id,350]])
     board.bus_servo_set_position(stepTime, [[D1,500]])
+    time.sleep(delay)
 
     # D down, F up
     set_degree(D2,0,stepTime)
@@ -1019,6 +1021,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[F3.id,350]])
     board.bus_servo_set_position(stepTime, [[F1,500]])
+    time.sleep(delay)
 
     # F down, C up
     set_degree(F2,0,stepTime)
@@ -1026,6 +1029,7 @@ def shiftCrabTurn():
     time.sleep(delay)
     board.bus_servo_set_position(stepTime, [[C3.id,650]])
     board.bus_servo_set_position(stepTime, [[C1,500]])
+    time.sleep(delay)
 
     # C down
     set_degree(C2,0,stepTime)
@@ -1050,6 +1054,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(A3,angs[1][0][1],stepTime)
     board.bus_servo_set_position(stepTime, [[A1,325]])
+    time.sleep(delay)
 
     # A down, D up
     set_degree(A2,angs[1][0][0],stepTime)
@@ -1057,6 +1062,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(D3,angs[3][3][1],stepTime)
     board.bus_servo_set_position(stepTime, [[D1,325]])
+    time.sleep(delay)
 
     # D down, F up
     set_degree(D2,angs[3][3][0],stepTime)
@@ -1064,6 +1070,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(F3,angs[3][5][1],stepTime)
     board.bus_servo_set_position(stepTime, [[F1,685]])
+    time.sleep(delay)
 
     # F down, C up
     set_degree(F2,angs[3][5][0],stepTime)
@@ -1071,6 +1078,7 @@ def shiftTurnCrab():
     time.sleep(delay)
     set_degree(C3,angs[1][2][1],stepTime)
     board.bus_servo_set_position(stepTime, [[C1,685]])
+    time.sleep(delay)
 
     # C down
     set_degree(C2,angs[1][2][0],stepTime)

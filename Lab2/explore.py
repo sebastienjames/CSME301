@@ -1245,48 +1245,52 @@ def go_direction(curr, to):
         turn180()
         shiftTurnCrab()
 
-def walk_path(instructions, d, goal_d):
-    
-    print(instructions)
-    start = instructions[0]
-    current_direction = d
+def walk_path(map, start, goal, start_d, goal_d):
 
-    for c in instructions[1:]:
-        if not start:
-            ("resetting and stopping")
-            crabReady()
-            print('breaking loop')
-            break
-        print("Current direction", current_direction)
-        if start[0] > c[0]: # UP
-            print("Going up", c, 1)
-            
-            go_direction(current_direction, 1)
-            current_direction = 1
-            walk()
-        
-        elif start[0] < c[0]: #DOWN
-            print("Going down", c, 3)
-            go_direction(current_direction, 3)
-            current_direction = 3
-            walk()
-            
-        elif start[1] > c[1]: # LEFT
-            print("Going left", c, 4)
-            go_direction(current_direction, 4)
-            
-            current_direction = 4
-            walk()
-        else:
-            print("Going right", c, 2)
-            go_direction(current_direction, 2)
-            current_direction = 2
-            walk()
-            
+    instructions = breadth_first_search(map, start, goal)
+    if instructions:
+        print(instructions)
+        start = instructions[0]
+        current_direction = start_d
 
-        start = c
+        for c in instructions[1:]:
+            if not start:
+                ("resetting and stopping")
+                crabReady()
+                print('breaking loop')
+                break
+            print("Current direction", current_direction)
+            if start[0] > c[0]: # UP
+                print("Going up", c, 1)
+                
+                go_direction(current_direction, 1)
+                current_direction = 1
+                walk()
+            
+            elif start[0] < c[0]: #DOWN
+                print("Going down", c, 3)
+                go_direction(current_direction, 3)
+                current_direction = 3
+                walk()
+                
+            elif start[1] > c[1]: # LEFT
+                print("Going left", c, 4)
+                go_direction(current_direction, 4)
+                
+                current_direction = 4
+                walk()
+            else:
+                print("Going right", c, 2)
+                go_direction(current_direction, 2)
+                current_direction = 2
+                walk()
+                
+
+            start = c
 
     go_direction(current_direction, goal_d)
+    return goal_d
+
 
 def get_next_coords(coords, d, map):
     if d == 1 and (coords[0]-1 >= 0):
@@ -1295,29 +1299,110 @@ def get_next_coords(coords, d, map):
         return (coords[0], coords[1]+1)
     elif d == 3 and (coords[0]+1 <= map.getCostmapSize(True)):
         return (coords[0]+1, coords[1])
-    elif d == 4 and (coords[1]+1 >= 0):
+    elif d == 4 and (coords[1]-1 >= 0):
+        print(coords)
         return (coords[0], coords[1]-1)
     else:
         return None
 
-def look(coords, facing, map):
+
+# Direction mappings
+directions = {1: "North", 2: "East", 3: "South", 4: "West"}
+
+# Movement mapping: (x, y)
+move_offsets = {
+    1: (0, 1),  # North (+y)
+    2: (1, 0),  # East (+x)
+    3: (0, -1), # South (-y)
+    4: (-1, 0)  # West (-x)
+}
+
+# Simulated "sensor" function (real robots would use actual sensor readings)
+def get_tiles(coords, facing, map):
+    """Simulates scanning the surroundings upon reaching a tile."""
     next = []
-    board.bus_servo_set_position(0.25, [[21, 500]]) # Right 
-    if s.getDistance() > 350:
-        next.append(get_next_coords(coords, facing, map))
-    board.bus_servo_set_position(0.25, [[21, 865]]) # Forward
-    if s.getDistance() > 350:
-        next.append(get_next_coords(coords, facing, map))
-    board.bus_servo_set_position(0.25, [[21, 1000-865]]) # Backward
-    if s.getDistance() > 350:
-        next.append(get_next_coords(coords, facing, map))
+
+    board.bus_servo_set_position(0.25, [[21, 1000-875]]) # Left
+    time.sleep(1)
+    if measure_distance() > 350:
+        new_d = facing-1
+        if new_d < 1:
+            new_d += 4
+        next_tile = get_next_coords(coords, new_d, map)
+        print("LEFT:", next_tile)
+        if next_tile:
+            next.append(next_tile)
+    else:
+        map.setObstacle(coords[0], coords[1], 1, facing)
+
+    board.bus_servo_set_position(0.25, [[21, 500]]) # Forward 
+    time.sleep(1)
+    if measure_distance() > 350:
+        next_tile = get_next_coords(coords, facing, map)
+        print("Forward:", next_tile)
+        if next_tile:
+            next.append(next_tile)
+    else:
+        map.setObstacle(coords[0], coords[1], 1, facing)
+
+    board.bus_servo_set_position(0.25, [[21, 875]]) # Right
+    time.sleep(1)
+    if measure_distance() > 350:
+        print("Right:", next_tile)
+        new_d = facing+1
+        if new_d > 4:
+            facing -= 4
+        next_tile = get_next_coords(coords, new_d, map)
+        if next_tile:
+            next.append(next_tile)
+    else:
+        map.setObstacle(coords[0], coords[1], 1, facing)
+
+    
 
     if None in next:
         print("ERROR: Out of bounds mapping (look)")
+    print("NEXT TILSE", next)
     return next
 
-    
-    
+
+def explore_maze(start, end, map):
+    """DFS-based real-time maze exploration, dynamically scanning surroundings."""
+    orientation = 1  # Start facing North
+    stack = [(start, orientation)]
+    visited = set()
+
+    old_tile, old_orientation = start, orientation
+
+    while stack:
+        tile, orientation = stack.pop()
+
+        # Execute movement only when a tile is actually reached
+        map.printObstacleMap()
+        orientation = walk_path(map, old_tile, tile, old_orientation, orientation)
+
+        print(f"### At tile {tile}, facing {directions[orientation]}")
+
+        if tile == end:
+            print("Reached destination!")
+            return
+
+        visited.add(tile)
+
+        # Scan the surroundings every time a new tile is visited
+        tiles = get_tiles(tile, orientation, map)
+
+        if not tiles:  # Dead end, backtrack
+            print(f"Dead end at {tile}, backtracking...")
+            continue  # Skip this iteration
+
+        # Add tiles to stack in the order they should be explored
+        for valid_orientation, valid_tile in tiles:
+            if valid_tile not in visited:
+                stack.append((valid_tile, valid_orientation))  # Push to stack
+
+    print("Maze fully explored or no path found.")
+
 
 
 ## Main program
@@ -1328,6 +1413,11 @@ def main():
     your_map.clearObstacleMap()
     your_map.printObstacleMap()
     x, y, d = 0, 0, 1
+
+    print(get_next_coords((x, y), d, your_map))
+
+    explore_maze((0, 0), None, your_map)
+
 
 
 

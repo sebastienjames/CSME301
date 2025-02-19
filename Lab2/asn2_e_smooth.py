@@ -1119,6 +1119,8 @@ s = sonar.Sonar()
 # Consider gaps in walls causing weird sensor readings and unnecessary Proportional adjustment
 def walk():
     crabReady()
+
+    # for i in range(8):
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1131,9 +1133,8 @@ def walk():
         strideA6(stride)
     else:
         print("Reading", s.getDistance())
-        crabWalk(s, 233, 20, stride)
-
-
+        crabWalk(s, 233, 10, stride)
+    
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1141,11 +1142,13 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
+
     if s.getDistance() > 350:
         strideA6(stride)
     else:
         print("Reading", s.getDistance())
-        crabWalk(s, 233, 20, stride)
+        crabWalk(s, 233, 10, stride)
+    
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1153,11 +1156,12 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-    # if s.getDistance() > 350:
-    strideA6(stride-4)
-    # else:
-    #     print("Reading", s.getDistance())
-    #     crabWalk(s, 233, 20, stride-2)
+
+    if s.getDistance() > 350:
+        strideA6(stride)
+    else:
+        print("Reading", s.getDistance())
+        crabWalk(s, 233, 10, stride-4)
     time.sleep(0.3)
     crabPose()    
 
@@ -1272,7 +1276,7 @@ def main():
             ("resetting and stopping")
             crabReady()
             print('breaking loop')
-            break
+            return
         print("Current direction", current_direction)
         if start[0] > c[0]: # UP
             print("Going up", c, 1)
@@ -1307,9 +1311,11 @@ def main():
 
 
 if __name__ == "__main__":
+    board.bus_servo_set_position(0.25, [[21, 1000-875]])
     main()
+    
     crabPose()
-    # board.bus_servo_set_position(0.25, [[21, 865]]) # Forward
-    # board.bus_servo_set_position(0.25, [[21, 1000-865]]) # Backward
+    # board.bus_servo_set_position(0.25, [[21, 875]]) # Forward
+    # board.bus_servo_set_position(0.25, [[21, 1000-875]]) # Backward
     # board.bus_servo_set_position(0.25, [[21, 500]]) # Right
 

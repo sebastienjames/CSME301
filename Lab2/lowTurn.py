@@ -307,9 +307,9 @@ def genAngles(i_body, i_height, i_limit, i_stride, i_stepheight):
 
 # variables in cm
 step_limit = 16 #changeable
-stride = 12 #changeable
+stride = 14 #changeable
 body_height = 13.1 #changeable # 7 good
-step_height = 5 #changeable
+step_height = 4 #changeable
 body = 13.45
 segment1 = 7.5
 segment2 = 13.7
@@ -322,8 +322,22 @@ allTickPos = 323 # 235 # Use this to tune the 45 turn
 up3pos = 50 # 0 will click
 up3posINV = 1000 - up3pos
 
+# Leg specific turning degrees
+ADdegINT = [2.771,-103.453] # Joint 2, Joint 3
+BEdegINT = [3.899, -87.330]
+CFdegINT = ADdegINT # Mirrors AD for initial stance
+degTurn = 45 # for paramaterizing values
+allTickPos = int(500-4.222222222*degTurn) # For initial testing purposes
+ADdegTurn = [4.296,-98.574]
+BEdegTurn = [1.535, -77.671]
+CFdegTurn = [4.556,-95.984]
+ADdegCTurn = CFdegTurn # counter turns
+BEdegCTurn = BEdegTurn
+CFdegCTurn = ADdegTurn
+
+
 def turnPose():
-    stepTime = 0.25
+    stepTime = 0.1
     # All 1 fan
     board.bus_servo_set_position(stepTime, [[A1,500]])
     board.bus_servo_set_position(stepTime, [[B1,500]])
@@ -332,23 +346,23 @@ def turnPose():
     board.bus_servo_set_position(stepTime, [[E1,500]])
     board.bus_servo_set_position(stepTime, [[F1,500]])
     # All 2 up
-    set_degree(A2, turn2degree, stepTime)
-    set_degree(B2, turn2degree, stepTime)
-    set_degree(C2, turn2degree, stepTime)
-    set_degree(D2, turn2degree, stepTime)
-    set_degree(E2, turn2degree, stepTime)
-    set_degree(F2, turn2degree, stepTime)
+    set_degree(A2, ADdegINT[0], stepTime)
+    set_degree(B2, BEdegINT[0], stepTime)
+    set_degree(C2, CFdegINT[0], stepTime)
+    set_degree(D2, ADdegINT[0], stepTime)
+    set_degree(E2, BEdegINT[0], stepTime)
+    set_degree(F2, CFdegINT[0], stepTime)
     # All 3 down
-    set_degree(A3, turn3degree, stepTime)
-    set_degree(B3, turn3degree, stepTime)
-    set_degree(C3, turn3degree, stepTime)
-    set_degree(D3, turn3degree, stepTime)
-    set_degree(E3, turn3degree, stepTime)
-    set_degree(F3, turn3degree, stepTime)
+    set_degree(A3, ADdegINT[1], stepTime)
+    set_degree(B3, BEdegINT[1], stepTime)
+    set_degree(C3, CFdegINT[1], stepTime)
+    set_degree(D3, ADdegINT[1], stepTime)
+    set_degree(E3, BEdegINT[1], stepTime)
+    set_degree(F3, CFdegINT[1], stepTime)
 
 def crabPose():
-    angs = genAngles(13.45, 13.1, 16, 12, 0)
-    stepTime = 0.25
+    angs = genAngles(body, body_height, step_limit, stride, 0)
+    stepTime = 0.1
     # Crab joint 1
     board.bus_servo_set_position(stepTime, [[A1,325]])
     board.bus_servo_set_position(stepTime, [[B1,500]])
@@ -371,29 +385,48 @@ def crabPose():
     set_degree(E3,angs[1][4][1],stepTime)
 
 def ACEPlace():
-    stepTime = 0.25
+    stepTime = 0.1
     # Joint 2
-    set_degree(A2, turn2degree, stepTime)
-    set_degree(C2, turn2degree, stepTime)
-    set_degree(E2, turn2degree, stepTime)
+    set_degree(A2, ADdegINT[0], stepTime)
+    set_degree(C2, CFdegINT[0], stepTime)
+    set_degree(E2, BEdegINT[0], stepTime)
     # Joint 3
-    set_degree(A3, turn3degree, stepTime)
-    set_degree(C3, turn3degree, stepTime)
-    set_degree(E3, turn3degree, stepTime)
+    set_degree(A3, ADdegINT[1], stepTime)
+    set_degree(C3, CFdegINT[1], stepTime)
+    set_degree(E3, BEdegINT[1], stepTime)
 
-def BDFPlace():
-    stepTime = 0.25
-    # Joint 2
-    set_degree(B2, turn2degree, stepTime)
-    set_degree(D2, turn2degree, stepTime)
-    set_degree(F2, turn2degree, stepTime)
-    # Joint 3
-    set_degree(B3, turn3degree, stepTime)
-    set_degree(D3, turn3degree, stepTime)
-    set_degree(F3, turn3degree, stepTime)
+def BDFPlace(state):
+    # state is current location direction of turn, neutral, or cturn
+
+    stepTime = 0.1
+
+    if state == 0:
+        # Turn        
+        set_degree(B2, BEdegTurn[0], stepTime)
+        set_degree(D2, ADdegTurn[0], stepTime)
+        set_degree(F2, CFdegTurn[0], stepTime)
+        set_degree(B3, BEdegTurn[1], stepTime)
+        set_degree(D3, ADdegTurn[1], stepTime)
+        set_degree(F3, CFdegTurn[1], stepTime)
+    elif state == 1:
+        # Neutral
+        set_degree(B2, BEdegINT[0], stepTime)
+        set_degree(D2, ADdegINT[0], stepTime)
+        set_degree(F2, CFdegINT[0], stepTime)
+        set_degree(B3, BEdegINT[1], stepTime)
+        set_degree(D3, ADdegINT[1], stepTime)
+        set_degree(F3, CFdegINT[1], stepTime)      
+    else:
+        # Counter turn
+        set_degree(B2, BEdegCTurn[0], stepTime)
+        set_degree(D2, ADdegCTurn[0], stepTime)
+        set_degree(F2, CFdegCTurn[0], stepTime)
+        set_degree(B3, BEdegCTurn[1], stepTime)
+        set_degree(D3, ADdegCTurn[1], stepTime)
+        set_degree(F3, CFdegCTurn[1], stepTime)
 
 def ACElift():
-    stepTime = 0.25
+    stepTime = 0.1
     # Joint 2
     set_degree(A2, 90, stepTime)
     set_degree(C2, 90, stepTime)
@@ -404,7 +437,7 @@ def ACElift():
     board.bus_servo_set_position(stepTime, [[C3.id,up3posINV]])
 
 def BDFlift():
-    stepTime = 0.25
+    stepTime = 0.1
     # Joint 2
     set_degree(B2, 90, stepTime)
     set_degree(D2, 90, stepTime)
@@ -414,40 +447,77 @@ def BDFlift():
     board.bus_servo_set_position(stepTime, [[F3.id,up3pos]])
     board.bus_servo_set_position(stepTime, [[B3.id,up3posINV]])
 
-def ACE1turn(direction):
-    stepTime = 0.5
+def ACEturn(direction):
+    stepTime = 1
     if direction == 0:
+        set_degree(E2, BEdegTurn[0], stepTime)
+        set_degree(A2, ADdegTurn[0], stepTime)
+        set_degree(C2, CFdegTurn[0], stepTime)
+        set_degree(E3, BEdegTurn[1], stepTime)
+        set_degree(A3, ADdegTurn[1], stepTime)
+        set_degree(C3, CFdegTurn[1], stepTime)
         # Turn
         tickPos = allTickPos
         board.bus_servo_set_position(stepTime, [[A1,tickPos]])
         board.bus_servo_set_position(stepTime, [[C1,tickPos]])
         board.bus_servo_set_position(stepTime, [[E1,tickPos]])
+        
     elif direction == 1:
+        set_degree(E2, BEdegINT[0], stepTime)
+        set_degree(A2, ADdegINT[0], stepTime)
+        set_degree(C2, CFdegINT[0], stepTime)
+        set_degree(E3, BEdegINT[1], stepTime)
+        set_degree(A3, ADdegINT[1], stepTime)
+        set_degree(C3, CFdegINT[1], stepTime)  
         # Neutral
         board.bus_servo_set_position(stepTime, [[A1,500]])
         board.bus_servo_set_position(stepTime, [[C1,500]])
         board.bus_servo_set_position(stepTime, [[E1,500]])         
     else:
+        set_degree(E2, BEdegCTurn[0], stepTime)
+        set_degree(A2, ADdegCTurn[0], stepTime)
+        set_degree(C2, CFdegCTurn[0], stepTime)
+        set_degree(E3, BEdegCTurn[1], stepTime)
+        set_degree(A3, ADdegCTurn[1], stepTime)
+        set_degree(C3, CFdegCTurn[1], stepTime)
         # Counter turn
         tickPos = 1000 - allTickPos
         board.bus_servo_set_position(stepTime, [[A1,tickPos]])
         board.bus_servo_set_position(stepTime, [[C1,tickPos]])
         board.bus_servo_set_position(stepTime, [[E1,tickPos]])
 
-def BDF1turn(direction):
-    stepTime = 0.5
+def BDFturn(direction):
+    stepTime = 1
     if direction == 0:
+        set_degree(B2, BEdegTurn[0], stepTime)
+        set_degree(D2, ADdegTurn[0], stepTime)
+        set_degree(F2, CFdegTurn[0], stepTime)
+        set_degree(B3, BEdegTurn[1], stepTime)
+        set_degree(D3, ADdegTurn[1], stepTime)
+        set_degree(F3, CFdegTurn[1], stepTime)
         # Turn
         tickPos = allTickPos
         board.bus_servo_set_position(stepTime, [[B1,tickPos]])
         board.bus_servo_set_position(stepTime, [[D1,tickPos]])
         board.bus_servo_set_position(stepTime, [[F1,tickPos]])
     elif direction == 1:
+        set_degree(B2, BEdegINT[0], stepTime)
+        set_degree(D2, ADdegINT[0], stepTime)
+        set_degree(F2, CFdegINT[0], stepTime)
+        set_degree(B3, BEdegINT[1], stepTime)
+        set_degree(D3, ADdegINT[1], stepTime)
+        set_degree(F3, CFdegINT[1], stepTime) 
         # Neutral
         board.bus_servo_set_position(stepTime, [[B1,500]])
         board.bus_servo_set_position(stepTime, [[D1,500]])
         board.bus_servo_set_position(stepTime, [[F1,500]])
     else:
+        set_degree(B2, BEdegCTurn[0], stepTime)
+        set_degree(D2, ADdegCTurn[0], stepTime)
+        set_degree(F2, CFdegCTurn[0], stepTime)
+        set_degree(B3, BEdegCTurn[1], stepTime)
+        set_degree(D3, ADdegCTurn[1], stepTime)
+        set_degree(F3, CFdegCTurn[1], stepTime)
         # Counter turn
         tickPos = 1000 - allTickPos
         board.bus_servo_set_position(stepTime, [[B1,tickPos]])
@@ -458,13 +528,15 @@ def Qsequence():
     # Begin sequencing
     BDFlift()
     time.sleep(0.4)
-    BDF1turn(2)
+    BDFturn(2)
     time.sleep(0.75)
-    BDFPlace()
+    BDFPlace(2)
     time.sleep(0.4)
     ACElift()
     time.sleep(0.4)
-    BDF1turn(0)
+    BDFturn(1)
+    time.sleep(0.4)
+    BDFturn(0)
     time.sleep(0.75)
     ACEPlace()
     time.sleep(0.4)
@@ -473,13 +545,15 @@ def Esequence():
     # Begin sequencing
     BDFlift()
     time.sleep(0.4)
-    BDF1turn(0)
+    BDFturn(0)
     time.sleep(0.75)
-    BDFPlace()
+    BDFPlace(0)
     time.sleep(0.4)
     ACElift()
     time.sleep(0.4)
-    BDF1turn(2)
+    BDFturn(1)
+    time.sleep(0.4)
+    BDFturn(2)
     time.sleep(0.75)
     ACEPlace()
     time.sleep(0.4)
@@ -493,9 +567,9 @@ def left90():
     Qsequence()
     BDFlift()
     time.sleep(delay)
-    BDF1turn(1)
+    BDFturn(1)
     time.sleep(0.75)
-    BDFPlace()
+    BDFPlace(1)
 
 def right90():
     delay = 0.4
@@ -506,9 +580,9 @@ def right90():
     Esequence()
     BDFlift()
     time.sleep(delay)
-    BDF1turn(1)
+    BDFturn(1)
     time.sleep(0.75)
-    BDFPlace()
+    BDFPlace(1)
 
 def turn180():
     delay = 0.4
@@ -521,14 +595,14 @@ def turn180():
     Esequence()
     BDFlift()
     time.sleep(delay)
-    BDF1turn(1)
+    BDFturn(1)
     time.sleep(0.75)
-    BDFPlace()
+    BDFPlace(1)
 
 def shiftCrabTurn():
     # Leg Order A,D,F,C ???? Maybe A, D, C, F??
-    stepTime = 0.15
-    delay = 0.25
+    stepTime = 0.1
+    delay = 0.15
 
     # Verify crabPose()
     crabPose()
@@ -536,36 +610,47 @@ def shiftCrabTurn():
     # A up
     set_degree(A2, 90, stepTime)
     time.sleep(delay)
-    set_degree(A3, turn3degree, stepTime)
+    set_degree(A3, ADdegINT[1], stepTime)
     board.bus_servo_set_position(stepTime, [[A1,500]])
     time.sleep(delay)
 
     # A down, D up
-    set_degree(A2, turn2degree, stepTime)
+    set_degree(A2, ADdegINT[0], stepTime)
     set_degree(D2, 90,stepTime)
     time.sleep(delay)
-    set_degree(D3, turn3degree, stepTime)
+    set_degree(D3, ADdegINT[1], stepTime)
     board.bus_servo_set_position(stepTime, [[D1,500]])
     time.sleep(delay)
 
     # D down, F up
-    set_degree(D2, turn2degree, stepTime)
+    set_degree(D2, ADdegINT[0], stepTime)
     set_degree(F2, 90,stepTime)
     time.sleep(delay)
-    set_degree(F3, turn3degree, stepTime)
+    set_degree(F3, CFdegINT[1], stepTime)
     board.bus_servo_set_position(stepTime, [[F1,500]])
     time.sleep(delay)
 
     # F down, C up
-    set_degree(F2, turn2degree,stepTime)
+    set_degree(F2, CFdegINT[0],stepTime)
     set_degree(C2, 90,stepTime)
     time.sleep(delay)
-    set_degree(C3, turn3degree,stepTime)
+    set_degree(C3, CFdegINT[1],stepTime)
     board.bus_servo_set_position(stepTime, [[C1,500]])
     time.sleep(delay)
 
     # C down
-    set_degree(C2, turn2degree,stepTime)
+    set_degree(C2, CFdegINT[0],stepTime)
+    time.sleep(delay)
+
+    # EXPERIMENTAL
+    set_degree(B2, BEdegINT[0]+20, stepTime)
+    set_degree(E2, BEdegINT[0]+20, stepTime)
+    time.sleep(delay)
+    set_degree(B3, BEdegINT[1], stepTime)
+    set_degree(E3, BEdegINT[1], stepTime)
+    time.sleep(delay)
+    set_degree(B2, BEdegINT[0], stepTime)
+    set_degree(E2, BEdegINT[0], stepTime)
     time.sleep(delay)
 
     # Verify turnPose()
@@ -574,16 +659,16 @@ def shiftCrabTurn():
 def shiftTurnCrab():
     # Leg Order A,D,F,C ???? Maybe A, D, C, F??
 
-    angs = genAngles(body, 13.1, 16, 12, step_height)
+    angs = genAngles(body, body_height, step_limit, stride, step_height)
 
-    stepTime = 0.15
-    delay = 0.25
+    stepTime = 0.1
+    delay = 0.15
 
     # Verify turnPose()
     turnPose()
 
     # A up
-    set_degree(A2,20,stepTime)
+    set_degree(A2,90,stepTime)
     time.sleep(delay)
     set_degree(A3,angs[1][0][1],stepTime)
     board.bus_servo_set_position(stepTime, [[A1,325]])
@@ -591,7 +676,7 @@ def shiftTurnCrab():
 
     # A down, D up
     set_degree(A2,angs[1][0][0],stepTime)
-    set_degree(D2,20,stepTime)
+    set_degree(D2,90,stepTime)
     time.sleep(delay)
     set_degree(D3,angs[3][3][1],stepTime)
     board.bus_servo_set_position(stepTime, [[D1,325]])
@@ -599,7 +684,7 @@ def shiftTurnCrab():
 
     # D down, F up
     set_degree(D2,angs[3][3][0],stepTime)
-    set_degree(F2,20,stepTime)
+    set_degree(F2,90,stepTime)
     time.sleep(delay)
     set_degree(F3,angs[3][5][1],stepTime)
     board.bus_servo_set_position(stepTime, [[F1,685]])
@@ -607,7 +692,7 @@ def shiftTurnCrab():
 
     # F down, C up
     set_degree(F2,angs[3][5][0],stepTime)
-    set_degree(C2,20,stepTime)
+    set_degree(C2,90,stepTime)
     time.sleep(delay)
     set_degree(C3,angs[1][2][1],stepTime)
     board.bus_servo_set_position(stepTime, [[C1,685]])
@@ -617,31 +702,150 @@ def shiftTurnCrab():
     set_degree(C2,angs[1][2][0],stepTime)
     time.sleep(delay)
 
+    # EXPERIMENTAL
+    set_degree(B2,angs[3][1][0]+20,stepTime)
+    set_degree(E2,angs[1][4][0]+20,stepTime)
+    time.sleep(delay)
+    set_degree(B3,angs[3][1][1],stepTime)
+    set_degree(E3,angs[1][4][1],stepTime)
+    time.sleep(delay)
+    set_degree(B2,angs[3][1][0],stepTime)
+    set_degree(E2,angs[1][4][0],stepTime)
+
+    time.sleep(delay)
+
     # Verify crabPose()
     crabPose()
+
+def strideA6(distance):
+    angs = genAngles(body,body_height,step_limit, distance, step_height)
+    stepTime = 0.1 #0.15
+    delay = 0.2 #0.25
+    # Frame 1
+    set_degree(B2,angs[0][1][0],stepTime)
+    set_degree(B3,angs[0][1][1],stepTime)
+    set_degree(D2,angs[0][3][0],stepTime)
+    set_degree(D3,angs[0][3][1],stepTime)
+    set_degree(F2,angs[0][5][0],stepTime)
+    set_degree(F3,angs[0][5][1],stepTime)
+    time.sleep(delay)
+    set_degree(A2,angs[0][0][0],stepTime)
+    set_degree(A3,angs[0][0][1],stepTime)
+    set_degree(C2,angs[0][2][0],stepTime)
+    set_degree(C3,angs[0][2][1],stepTime)
+    set_degree(E2,angs[0][4][0],stepTime)
+    set_degree(E3,angs[0][4][1],stepTime)
+    time.sleep(delay)
+    # Frame 2
+    set_degree(A2,angs[1][0][0],stepTime)
+    set_degree(A3,angs[1][0][1],stepTime)
+    set_degree(B2,angs[1][1][0],stepTime)
+    set_degree(B3,angs[1][1][1],stepTime)
+    set_degree(C2,angs[1][2][0],stepTime)
+    set_degree(C3,angs[1][2][1],stepTime)
+    set_degree(D2,angs[1][3][0],stepTime)
+    set_degree(D3,angs[1][3][1],stepTime)
+    set_degree(E2,angs[1][4][0],stepTime)
+    set_degree(E3,angs[1][4][1],stepTime)
+    set_degree(F2,angs[1][5][0],stepTime)
+    set_degree(F3,angs[1][5][1],stepTime)
+    time.sleep(delay)
+    # Frame 3
+    set_degree(A2,angs[2][0][0],stepTime)
+    set_degree(A3,angs[2][0][1],stepTime)
+
+    set_degree(C2,angs[2][2][0],stepTime)
+    set_degree(C3,angs[2][2][1],stepTime)
+
+    set_degree(E2,angs[2][4][0],stepTime)
+    set_degree(E3,angs[2][4][1],stepTime)
+
+    time.sleep(delay)
+    set_degree(B2,angs[2][1][0],stepTime)
+    set_degree(B3,angs[2][1][1],stepTime)
+    set_degree(D2,angs[2][3][0],stepTime)
+    set_degree(D3,angs[2][3][1],stepTime)
+    set_degree(F2,angs[2][5][0],stepTime)
+    set_degree(F3,angs[2][5][1],stepTime)
+    time.sleep(delay)
+
+    # Frame 4
+    set_degree(A2,angs[3][0][0],stepTime)
+    set_degree(A3,angs[3][0][1],stepTime)
+    set_degree(B2,angs[3][1][0],stepTime)
+    set_degree(B3,angs[3][1][1],stepTime)
+    set_degree(C2,angs[3][2][0],stepTime)
+    set_degree(C3,angs[3][2][1],stepTime)
+    set_degree(D2,angs[3][3][0],stepTime)
+    set_degree(D3,angs[3][3][1],stepTime)
+    set_degree(E2,angs[3][4][0],stepTime)
+    set_degree(E3,angs[3][4][1],stepTime)
+    set_degree(F2,angs[3][5][0],stepTime)
+    set_degree(F3,angs[3][5][1],stepTime)
+    time.sleep(delay)
+
+
+
 
 
 ## Main program
 
 def main():
-    # crabReady()
-    # time.sleep(2)
-    # crabPose()
-    # time.sleep(2)
-    # shiftCrabTurn()
-    # time.sleep(2)
-    # crabPose()
-    # time.sleep(2)
-    # shiftCrabTurn()
     turnPose()
+    time.sleep(3)
+
+    crabPose()
+    time.sleep(3)
+
+    strideA6(stride)
+    strideA6(stride)
+    strideA6(stride)
+
+    shiftCrabTurn()
+    time.sleep(3)
     right90()
-    time.sleep(2)
+    time.sleep(1)
     left90()
-    time.sleep(2)
+    time.sleep(1)
     turn180()
-    time.sleep(2)
+    time.sleep(1)
+
+    shiftTurnCrab()
+    time.sleep(3)
     
 
 if __name__ == "__main__":
-    main()
+    crabPose()
+    time.sleep(0.1)
+    strideA6(stride)
+    strideA6(stride)
+    strideA6(stride)
+    time.sleep(0.1)
+    crabPose()
+    # while True:
+    #     strideA6(stride)
+    #     strideA6(stride)
+    #     strideA6(stride)
+    #     strideA6(stride)
+
+
+    #     shiftCrabTurn()
+    #     time.sleep(3)
+    #     right90()
+    #     time.sleep(1)
+    #     left90()
+    #     time.sleep(1)
+    #     turn180()
+    #     time.sleep(1)
+
+    #     shiftTurnCrab()
+    #     time.sleep(3)
+    # #kill
+    #     if not start:
+    #         ("resetting and stopping")
+    #         crabPose()
+            
+    #         time.sleep(1)
+    #         print('breaking loop')
+    #         break
 

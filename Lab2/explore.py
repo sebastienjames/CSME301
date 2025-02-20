@@ -1303,6 +1303,11 @@ def get_next_coords(coords, d, map):
         print(coords)
         return (coords[0], coords[1]-1)
     else:
+        print(d)
+        print(1, (coords[0]-1, coords[1]))
+        print(2, (coords[0], coords[1]+1))
+        print(3, (coords[0]+1, coords[1]))
+        print(4, (coords[0], coords[1]-1))
         return None
 
 
@@ -1331,7 +1336,7 @@ def get_tiles(coords, facing, map):
         next_tile = get_next_coords(coords, new_d, map)
         print("LEFT:", next_tile)
         if next_tile:
-            next.append(next_tile)
+            next.append((next_tile, new_d))
     else:
         map.setObstacle(coords[0], coords[1], 1, facing)
 
@@ -1341,7 +1346,7 @@ def get_tiles(coords, facing, map):
         next_tile = get_next_coords(coords, facing, map)
         print("Forward:", next_tile)
         if next_tile:
-            next.append(next_tile)
+            next.append((next_tile, new_d))
     else:
         map.setObstacle(coords[0], coords[1], 1, facing)
 
@@ -1354,9 +1359,11 @@ def get_tiles(coords, facing, map):
             facing -= 4
         next_tile = get_next_coords(coords, new_d, map)
         if next_tile:
-            next.append(next_tile)
+            next.append((next_tile, new_d))
     else:
         map.setObstacle(coords[0], coords[1], 1, facing)
+    
+    board.bus_servo_set_position(0.25, [[21, 1000-875]])
 
     
 
@@ -1371,14 +1378,17 @@ def explore_maze(start, end, map):
     orientation = 1  # Start facing North
     stack = [(start, orientation)]
     visited = set()
+    print("START", stack)
 
     old_tile, old_orientation = start, orientation
 
     while stack:
+        print("STACK:", stack)
         tile, orientation = stack.pop()
 
         # Execute movement only when a tile is actually reached
         map.printObstacleMap()
+        print("Calling walk_path", map, old_tile, tile, old_orientation, orientation)
         orientation = walk_path(map, old_tile, tile, old_orientation, orientation)
 
         print(f"### At tile {tile}, facing {directions[orientation]}")
@@ -1391,6 +1401,7 @@ def explore_maze(start, end, map):
 
         # Scan the surroundings every time a new tile is visited
         tiles = get_tiles(tile, orientation, map)
+        print("TILES<", tiles)
 
         if not tiles:  # Dead end, backtrack
             print(f"Dead end at {tile}, backtracking...")
@@ -1398,8 +1409,12 @@ def explore_maze(start, end, map):
 
         # Add tiles to stack in the order they should be explored
         for valid_orientation, valid_tile in tiles:
+            print("LOOK:",valid_orientation, valid_tile)
             if valid_tile not in visited:
                 stack.append((valid_tile, valid_orientation))  # Push to stack
+            # if tile not in visited:
+            #     stack.append(tile)
+            #     print("STACK")
 
     print("Maze fully explored or no path found.")
 

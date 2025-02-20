@@ -1326,18 +1326,24 @@ move_offsets = {
 
 # Simulated "sensor" function (real robots would use actual sensor readings)
 def get_tiles(coords, facing, map):
+    if not start:
+            crabReady()
+            print('DIE')
+            return
+    
     """Simulates scanning the surroundings upon reaching a tile."""
     next = []
 
     board.bus_servo_set_position(0.25, [[21, 1000-875]]) # Right
     time.sleep(1)
+    print("Reading right")
     if measure_distance() > 350:
         new_d = facing+1
         if new_d > 4:
             facing -= 4
         print("New d:", new_d)
         next_tile = get_next_coords(coords, new_d, map)
-        # print("LEFT:", next_tile)
+        print("Left is free:", next_tile)
         if next_tile:
             next.append((next_tile, new_d))
     else:
@@ -1345,9 +1351,11 @@ def get_tiles(coords, facing, map):
 
     board.bus_servo_set_position(0.25, [[21, 500]]) # Forward 
     time.sleep(1)
+    print("Reading forward")
     if measure_distance() > 350:
         next_tile = get_next_coords(coords, facing, map)
-        # print("Forward:", next_tile)
+        print("Forward is free:", next_tile)
+        new_d = facing
         if next_tile:
             next.append((next_tile, new_d))
     else:
@@ -1355,13 +1363,17 @@ def get_tiles(coords, facing, map):
 
     board.bus_servo_set_position(0.25, [[21, 875]]) # Left
     time.sleep(1)
+    print("Reading left")
     if measure_distance() > 350:
-        # print("Right:", next_tile)
-        new_d = facing+1
+        print("Right is free:")
+        new_d = facing-1
         if new_d < 1:
             new_d += 4
         
+        print("newd", new_d)
+        
         next_tile = get_next_coords(coords, new_d, map)
+        print("next tile:, ", next_tile)
         if next_tile:
             next.append((next_tile, new_d))
     else:
@@ -1373,7 +1385,7 @@ def get_tiles(coords, facing, map):
 
     if None in next:
         print("ERROR: Out of bounds mapping (look)")
-    # print("NEXT TILSE", next)
+    print("NEXT TILES", next)
     return next
 
 
@@ -1387,6 +1399,8 @@ def explore_maze(start, end, map):
     old_tile, old_orientation = start, orientation
 
     while stack:
+    # for i in range(4):
+        
         if not start:
             crabReady()
             print('DIE')
@@ -1396,10 +1410,10 @@ def explore_maze(start, end, map):
 
         # Execute movement only when a tile is actually reached
         map.printObstacleMap()
-        # print("Calling walk_path", map, old_tile, tile, old_orientation, orientation)
+        print("Calling walk_path", map, old_tile, tile, old_orientation, orientation)
         orientation = walk_path(map, old_tile, tile, old_orientation, orientation)
 
-        # print(f"### At tile {tile}, facing {directions[orientation]}")
+        print(f"### At tile {tile}, facing {directions[orientation]}")
 
         if tile == end:
             print("Reached destination!")
@@ -1409,7 +1423,7 @@ def explore_maze(start, end, map):
 
         # Scan the surroundings every time a new tile is visited
         tiles = get_tiles(tile, orientation, map)
-        # print("TILES<", tiles)
+        print("TILES ARE NOW", tiles)
 
         if not tiles:  # Dead end, backtrack
             print(f"Dead end at {tile}, backtracking...")
@@ -1423,6 +1437,8 @@ def explore_maze(start, end, map):
             # if tile not in visited:
             #     stack.append(tile)
             #     print("STACK")
+
+        old_tile, old_orientation = tile, orientation
 
     print("Maze fully explored or no path found.")
 

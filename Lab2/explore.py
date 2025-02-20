@@ -1357,7 +1357,7 @@ def get_tiles(coords, facing, map):
     time.sleep(1)
     if measure_distance() > 350:
         # print("Right:", next_tile)
-        new_d = facing+1
+        new_d = facing-1
         if new_d < 1:
             new_d += 4
         
@@ -1379,7 +1379,7 @@ def get_tiles(coords, facing, map):
 
 def explore_maze(start, end, map):
     """DFS-based real-time maze exploration, dynamically scanning surroundings."""
-    orientation = 2  # Start facing North
+    orientation = 2  # Start facing east, north and west always blocked
     stack = [(start, orientation)]
     visited = set()
     # print("START", stack)

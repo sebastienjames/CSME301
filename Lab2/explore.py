@@ -1149,11 +1149,11 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-    # if s.getDistance() > 350:
-    strideA6(stride-4)
-    # else:
-    #     print("Reading", s.getDistance())
-    #     crabWalk(s, 233, 20, stride-2)
+    if s.getDistance() > 350:
+        strideA6(stride-4)
+    else:
+        print("Reading", s.getDistance())
+        crabWalk(s, 233, 20, stride-2)
     time.sleep(0.3)
     crabPose()    
 

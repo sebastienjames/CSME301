@@ -7,6 +7,7 @@ import os
 import ros_robot_controller_sdk as rrc
 import sonar
 import map_
+import msvcrt
 
 import sympy as sp
 
@@ -1182,7 +1183,94 @@ def breadth_first_search(time_map, start, end):
 
 	return None
 
+directions = {1: "North", 2: "East", 3: "South", 4: "West"}
+dirs = {"North":[-3,1,5], "East":[-2,2,6], "South":[-1,3,7], "West":[0,4,8]}
+dir_num = {-3:1, 1:1, 5:1, -2:2, 2:2, 6:2, -1:3, 3:3, 7:3, 0:4, 4:4, 8:4}
+
+
+def get_tiles(start_dir, pos):
+    valid_tiles = []
+    print("currently facing", directions[start_dir])
+
+    front = [-1,0,1]
+
+    for dir in front:
+        curr_dir = (start_dir+dir)
+        curr_dir = dir_num[curr_dir]
+
+        print("checking", directions[curr_dir])
+
+        #sensor_turn(curr_dir)
+
+        if no_wall():
+            if dir == 1:
+                valid_tiles.append((dir, (pos[0],pos[1]+1)))
+            elif dir == 3:
+                valid_tiles.append((dir, (pos[0], pos[1]-1)))
+            elif dir == 2:
+                valid_tiles.append((dir, (pos[0]+1,pos[1])))
+            elif dir == 4:
+                valid_tiles.append((dir, (pos[0]-1, pos[1])))
+
+
+def execute_commands(instructions, current_direction):
+    start = instructions[0]
+
+    for c in instructions[1:]:
+        print("Current direction", current_direction)
+        if start[0] > c[0]: # UP
+            go_direction(current_direction, 1)
+            walk()
+            print("Going up", c, 1)
+        elif start[0] < c[0]: #DOWN
+            go_direction(current_direction, 3)
+            walk()
+            print("Going down", c, 3)
+        elif start[1] > c[1]: # LEFT
+            go_direction(current_direction, 4)
+            walk()
+            print("Going left", c, 4)
+        else:
+            go_direction(current_direction, 2)
+            walk()
+            print("Going right", c, 2)
+
+        start = c
+
+
+def dfs_implement(start, end):
+    orientation = dir["North"]
+
+    stack = [(start, orientation, [start])]
+    visited = set()
+
+    if start == end:
+        return [start]
     
+    while stack:
+        tile, orientation, path = stack.pop()
+
+        if tile == end:
+            return path
+        
+        if tile not in visited:
+            visited.add(tile)
+
+        if get_tiles(orientation, tile) == []:
+            execute_commands([path[-1], path[-2]], orientation)
+
+        
+        for valid_orientation, valid_tile in get_tiles(orientation, tile):
+            if valid_tile not in visited:
+                visited.add(tile)
+                stack.append(valid_tile, valid_orientation, path + [valid_tile])
+
+        execute_commands([path[-2][1], path[-1][1]], orientation)
+
+        
+
+
+
              
 def go_direction(curr, to):
     print("Going from", curr, "to", to)
@@ -1227,8 +1315,15 @@ def go_direction(curr, to):
 
 
 ## Main program
+        
+def exit_on_key():
+    print("press any key to exit")
+    msvcrt.getch()
+    sys.exit()
+
 
 def main():
+
     your_map = map_.CSME301Map()
 
     your_map.printObstacleMap()
@@ -1280,5 +1375,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    crabPose()
+    thread = threading.Thread(target=exit_on_key)
+    thread.daemon = True
+    thread.start()
+    while True:
+        main()
+        crabPose()

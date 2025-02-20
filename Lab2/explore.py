@@ -1391,7 +1391,7 @@ def get_tiles(coords, facing, map):
 
 def explore_maze(start, end, map):
     """DFS-based real-time maze exploration, dynamically scanning surroundings."""
-    orientation = 2  # Start facing North
+    orientation = 2  # Start facing east, north and west always blocked
     stack = [(start, orientation)]
     visited = set()
     # print("START", stack)

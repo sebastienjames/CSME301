@@ -7,6 +7,7 @@ import os
 import ros_robot_controller_sdk as rrc
 import sonar
 import map_301
+# import msvcrt
 
 import sympy as sp
 
@@ -1326,6 +1327,7 @@ move_offsets = {
 
 # Simulated "sensor" function (real robots would use actual sensor readings)
 def get_tiles(coords, facing, map):
+    print("We are facing", facing)
     if not start:
             crabReady()
             print('DIE')
@@ -1337,38 +1339,42 @@ def get_tiles(coords, facing, map):
     board.bus_servo_set_position(0.25, [[21, 1000-875]]) # Right
     time.sleep(1)
     print("Reading right")
-    if measure_distance() > 350:
-        new_d = facing+1
-        if new_d > 4:
-            facing -= 4
+    new_d = facing+1
+    if new_d > 4:
+        facing -= 4
+    if measure_distance() > 400:
+        
         print("New d:", new_d)
         next_tile = get_next_coords(coords, new_d, map)
-        print("Left is free:", next_tile)
+        print("Right is free:", next_tile)
         if next_tile:
             next.append((next_tile, new_d))
     else:
-        map.setObstacle(coords[0], coords[1], 1, facing)
+        print("Setting obstacle right at", coords[0], coords[1], 1, new_d)
+        map.setObstacle(coords[0], coords[1], 1, new_d)
 
     board.bus_servo_set_position(0.25, [[21, 500]]) # Forward 
     time.sleep(1)
     print("Reading forward")
-    if measure_distance() > 350:
+    # new_d = facing
+    if measure_distance() > 400:
         next_tile = get_next_coords(coords, facing, map)
         print("Forward is free:", next_tile)
-        new_d = facing
         if next_tile:
-            next.append((next_tile, new_d))
+            next.append((next_tile, facing))
     else:
+        print("Setting obstacle forward at", coords[0], coords[1], 1, facing)
         map.setObstacle(coords[0], coords[1], 1, facing)
 
     board.bus_servo_set_position(0.25, [[21, 875]]) # Left
     time.sleep(1)
     print("Reading left")
-    if measure_distance() > 350:
-        print("Right is free:")
-        new_d = facing-1
-        if new_d < 1:
-            new_d += 4
+    new_d = facing-1
+    if new_d < 1:
+        new_d += 4
+    if measure_distance() > 500:
+        print("Left is free:")
+        
         
         print("newd", new_d)
         
@@ -1377,7 +1383,8 @@ def get_tiles(coords, facing, map):
         if next_tile:
             next.append((next_tile, new_d))
     else:
-        map.setObstacle(coords[0], coords[1], 1, facing)
+        print("Setting obstacle left at", coords[0], coords[1], 1, new_d)
+        map.setObstacle(coords[0], coords[1], 1, new_d)
     
     board.bus_servo_set_position(0.25, [[21, 1000-875]])
 
@@ -1427,6 +1434,7 @@ def explore_maze(start, end, map):
 
         if not tiles:  # Dead end, backtrack
             print(f"Dead end at {tile}, backtracking...")
+            old_tile, old_orientation = tile, orientation
             continue  # Skip this iteration
 
         # Add tiles to stack in the order they should be explored
@@ -1467,11 +1475,17 @@ def main():
 
     
     
-    
+# def exit_on_key():
+#     print("press any key to exit")
+#     msvcrt.getch()
+#     sys.exit()
         
 
 
 if __name__ == "__main__":
+    # thread = threading.Thread(target=exit_on_key)
+    # thread.daemon = True
+    # thread.start()
     main()
     crabPose()
     # board.bus_servo_set_position(0.25, [[21, 865]]) # Forward

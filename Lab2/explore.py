@@ -1475,17 +1475,31 @@ def main():
 
     
     
-# def exit_on_key():
-#     print("press any key to exit")
-#     msvcrt.getch()
-#     sys.exit()
+import termios, tty
+
+def wait_key():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
         
+
+def exit_on_key():
+    print("press any key to exit")
+    wait_key()
+    print("exiting...")
+
 
 
 if __name__ == "__main__":
-    # thread = threading.Thread(target=exit_on_key)
-    # thread.daemon = True
-    # thread.start()
+    thread = threading.Thread(target=exit_on_key)
+    thread.daemon = True
+    thread.start()
+
     main()
     crabPose()
     # board.bus_servo_set_position(0.25, [[21, 865]]) # Forward

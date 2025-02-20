@@ -7,6 +7,7 @@ import os
 import ros_robot_controller_sdk as rrc
 import sonar
 import map_
+import msvcrt
 
 import sympy as sp
 
@@ -1314,8 +1315,15 @@ def go_direction(curr, to):
 
 
 ## Main program
+        
+def exit_on_key():
+    print("press any key to exit")
+    msvcrt.getch()
+    sys.exit()
+
 
 def main():
+
     your_map = map_.CSME301Map()
 
     your_map.printObstacleMap()
@@ -1367,5 +1375,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    crabPose()
+    thread = threading.Thread(target=exit_on_key)
+    thread.daemon = True
+    thread.start()
+    while True:
+        main()
+        crabPose()

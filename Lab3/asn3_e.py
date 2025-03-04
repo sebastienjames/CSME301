@@ -304,19 +304,25 @@ def genAngles(i_body, i_height, i_limit, i_stride, i_stepheight):
     return[frame1angs,frame2angs,frame3angs,frame4angs]
 
 # variables in cm
-step_limit = 16.9 #changeable
-stride = 6 #changeable
-body_height = 7 #changeable # 7 good
-step_height = 2 #changeable
+step_limit = 17 #changeable MIN 15
+stride = 10 #changeable ????? MAX 30-step_limit
+stride_count = 9
+
+assert (step_limit + stride) <= 30
+
 body = 13.45
 segment1 = 7.5
 segment2 = 13.7
+body_height = 12 # Fixed 12
+step_height = 3 # Fixed 3
+globalStepTime = 0.25 # Fixed
+globalDelay = 0.4 # Fixed
 
 # POSES
 
 def crabPose():
     angs = genAngles(body, body_height, step_limit, stride, 0)
-    stepTime = 0.08
+    stepTime = globalStepTime
     # Crab joint 1
     board.bus_servo_set_position(stepTime, [[A1,325]])
     board.bus_servo_set_position(stepTime, [[B1,500]])
@@ -340,10 +346,10 @@ def crabPose():
 
 # ACTIONS
 
-def strideA6(distance):
+def strideA(distance):
     angs = genAngles(body,body_height,step_limit, distance, step_height)
-    stepTime = 0.08 #0.15
-    delay = 0.1 #0.25
+    stepTime = globalStepTime #0.15
+    delay = globalDelay #0.25
     # Frame 1
     set_degree(B2,angs[0][1][0],stepTime)
     set_degree(B3,angs[0][1][1],stepTime)
@@ -352,6 +358,7 @@ def strideA6(distance):
     set_degree(F2,angs[0][5][0],stepTime)
     set_degree(F3,angs[0][5][1],stepTime)
     time.sleep(delay)
+    # Frame 1.5
     set_degree(A2,angs[0][0][0],stepTime)
     set_degree(A3,angs[0][0][1],stepTime)
     set_degree(C2,angs[0][2][0],stepTime)
@@ -381,6 +388,7 @@ def strideA6(distance):
     set_degree(E2,angs[2][4][0],stepTime)
     set_degree(E3,angs[2][4][1],stepTime)
     time.sleep(delay)
+    # Frame 3.5
     set_degree(B2,angs[2][1][0],stepTime)
     set_degree(B3,angs[2][1][1],stepTime)
     set_degree(D2,angs[2][3][0],stepTime)
@@ -403,24 +411,25 @@ def strideA6(distance):
     set_degree(F3,angs[3][5][1],stepTime)
     time.sleep(delay)
 
-def strideD6(distance):
+def strideD(distance):
     angs = genAngles(body,body_height,step_limit, distance, step_height)
-    stepTime = 0.08 #0.15
-    delay = 0.1 #0.25
+    stepTime = globalStepTime #0.15
+    delay = globalDelay #0.25
     # Frame 1
-    set_degree(B2,angs[0][1][0],stepTime)
-    set_degree(B3,angs[0][1][1],stepTime)
-    set_degree(D2,angs[0][3][0],stepTime)
-    set_degree(D3,angs[0][3][1],stepTime)
-    set_degree(F2,angs[0][5][0],stepTime)
-    set_degree(F3,angs[0][5][1],stepTime)
-    time.sleep(delay)
     set_degree(A2,angs[0][0][0],stepTime)
     set_degree(A3,angs[0][0][1],stepTime)
     set_degree(C2,angs[0][2][0],stepTime)
     set_degree(C3,angs[0][2][1],stepTime)
     set_degree(E2,angs[0][4][0],stepTime)
     set_degree(E3,angs[0][4][1],stepTime)
+    time.sleep(delay)
+    # Frame 1.5
+    set_degree(B2,angs[0][1][0],stepTime)
+    set_degree(B3,angs[0][1][1],stepTime)
+    set_degree(D2,angs[0][3][0],stepTime)
+    set_degree(D3,angs[0][3][1],stepTime)
+    set_degree(F2,angs[0][5][0],stepTime)
+    set_degree(F3,angs[0][5][1],stepTime)
     time.sleep(delay)
     # Frame 2
     set_degree(A2,angs[3][0][0],stepTime)
@@ -437,19 +446,20 @@ def strideD6(distance):
     set_degree(F3,angs[3][5][1],stepTime)
     time.sleep(delay)
     # Frame 3
-    set_degree(A2,angs[2][0][0],stepTime)
-    set_degree(A3,angs[2][0][1],stepTime)
-    set_degree(C2,angs[2][2][0],stepTime)
-    set_degree(C3,angs[2][2][1],stepTime)
-    set_degree(E2,angs[2][4][0],stepTime)
-    set_degree(E3,angs[2][4][1],stepTime)
-    time.sleep(delay)
     set_degree(B2,angs[2][1][0],stepTime)
     set_degree(B3,angs[2][1][1],stepTime)
     set_degree(D2,angs[2][3][0],stepTime)
     set_degree(D3,angs[2][3][1],stepTime)
     set_degree(F2,angs[2][5][0],stepTime)
     set_degree(F3,angs[2][5][1],stepTime)
+    time.sleep(delay)
+    # Frame 3.5
+    set_degree(A2,angs[2][0][0],stepTime)
+    set_degree(A3,angs[2][0][1],stepTime)
+    set_degree(C2,angs[2][2][0],stepTime)
+    set_degree(C3,angs[2][2][1],stepTime)
+    set_degree(E2,angs[2][4][0],stepTime)
+    set_degree(E3,angs[2][4][1],stepTime)
     time.sleep(delay)
     # Frame 4
     set_degree(A2,angs[1][0][0],stepTime)
@@ -471,19 +481,24 @@ def strideD6(distance):
 
 def main():
     crabPose()
+    print('starting', step_limit, stride, stride_count)
+    time.sleep(2)
+    for i in range(stride_count):
+        strideA(stride)
+    time.sleep(0.5)
+    crabPose()
 
 if __name__ == "__main__":
 
     crabPose()
     
-    while True:
-        main()
-    #kill
-        if not start:
-            ("resetting and stopping")
-            crabPose()
-            
-            time.sleep(1)
-            print('breaking loop')
-            break
+    main()
+#kill
+    if not start:
+        ("resetting and stopping")
+        crabPose()
+        
+        time.sleep(1)
+        print('breaking loop')
+        
 

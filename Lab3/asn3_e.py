@@ -305,8 +305,9 @@ def genAngles(i_body, i_height, i_limit, i_stride, i_stepheight):
 
 # variables in cm
 step_limit = 17 #changeable MIN 15
-stride = 10 #changeable ????? MAX 30-step_limit
-stride_count = 9
+stride = 7.5 #changeable ????? MAX 30-step_limit
+stride_count = 6
+stride_remainder = 0.5
 
 assert (step_limit + stride) <= 30
 
@@ -481,11 +482,13 @@ def strideD(distance):
 
 def main():
     crabPose()
-    print('starting', step_limit, stride, stride_count)
+    print('starting', step_limit, stride, stride_count+stride_remainder)
     time.sleep(2)
     for i in range(stride_count):
         strideA(stride)
     time.sleep(0.5)
+    if stride_remainder > 0:
+        strideA(stride * stride_remainder)
     crabPose()
 
 if __name__ == "__main__":

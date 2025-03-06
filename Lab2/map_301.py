@@ -363,16 +363,16 @@ class CSME301Map():
             for j in range(self.costmap_size_col):
                 if (self.verticalWalls[i][j] == 0):
                     if j == self.costmap_size_col - 1:
-                        sys.stdout.write("  O |")
+                        sys.stdout.write("    |")
                     elif j == 0:
-                        sys.stdout.write("| O ")
+                        sys.stdout.write("|   ")
                     else:
-                        sys.stdout.write("  O ")
+                        sys.stdout.write("    ")
                 else:
                     if j == self.costmap_size_col - 1:
-                        sys.stdout.write("| O |")
+                        sys.stdout.write("|   |")
                     else:
-                        sys.stdout.write("| O ")
+                        sys.stdout.write("|   ")
             print(" ")
         for j in range(self.costmap_size_col):
                 sys.stdout.write(" ---")

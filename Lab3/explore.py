@@ -6,7 +6,9 @@ import math
 import os
 import ros_robot_controller_sdk as rrc
 import sonar
-import map_301
+import pandas as pd
+import numpy as np
+# import msvcrt
 
 import sympy as sp
 
@@ -200,13 +202,6 @@ step_height = 5 #changeable
 body = 13.45
 segment1 = 7.5
 segment2 = 13.7
-
-# Turning degrees
-turn2degree = 0 # 70.123
-turn3degree = -90 # -160.123
-allTickPos = 323 # 235 # Use this to tune the 45 turn
-up3pos = 50 # 0 will click
-up3posINV = 1000 - up3pos
 
 # law of cosines
 def angle (a, b, c):
@@ -421,7 +416,6 @@ def strideA6(distance):
     set_degree(F2,angs[3][5][0],stepTime)
     set_degree(F3,angs[3][5][1],stepTime)
     time.sleep(delay)
-
 
 def strideA(distance):
     angs = genAngles(body,body_height,step_limit, distance, step_height)
@@ -735,209 +729,268 @@ def strideAS(distance, adjust):
     board.bus_servo_set_position(0.25, [[F1,685]])    
     time.sleep(delay)
 
+def Joint3out():
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[E3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[A3.id,650]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    board.bus_servo_set_position(0.25, [[C3.id,650]])
+def Joint3in():
+    board.bus_servo_set_position(0.25, [[D3.id,200]])
+    board.bus_servo_set_position(0.25, [[E3.id,200]])
+    board.bus_servo_set_position(0.25, [[F3.id,200]])
+    board.bus_servo_set_position(0.25, [[A3.id,800]])
+    board.bus_servo_set_position(0.25, [[B3.id,800]])
+    board.bus_servo_set_position(0.25, [[C3.id,800]])
+def BDFDown():
+    board.bus_servo_set_position(0.25, [[D2.id,500]])
+    board.bus_servo_set_position(0.25, [[F2.id,500]])
+    board.bus_servo_set_position(0.25, [[B2.id,500]])
+def ACEDown():
+    board.bus_servo_set_position(0.25, [[A2.id,500]])
+    board.bus_servo_set_position(0.25, [[C2.id,500]])
+    board.bus_servo_set_position(0.25, [[E2.id,500]])
+def BDFUp():
+    board.bus_servo_set_position(0.25, [[D2.id,100]])
+    board.bus_servo_set_position(0.25, [[F2.id,100]])
+    board.bus_servo_set_position(0.25, [[B2.id,900]])
+def ACEUp():
+    board.bus_servo_set_position(0.25, [[E2.id,100]])
+    board.bus_servo_set_position(0.25, [[A2.id,900]])
+    board.bus_servo_set_position(0.25, [[C2.id,900]])
+def BDFNeutral():
+    board.bus_servo_set_position(0.25, [[B1,500]])
+    board.bus_servo_set_position(0.25, [[D1,500]])
+    board.bus_servo_set_position(0.25, [[F1,500]])
+def ACENeutral():
+    board.bus_servo_set_position(0.25, [[A1,500]])
+    board.bus_servo_set_position(0.25, [[C1,500]])
+    board.bus_servo_set_position(0.25, [[E1,500]])
+def BDFCturn():
+    board.bus_servo_set_position(0.5, [[B1,668]])
+    board.bus_servo_set_position(0.5, [[D1,668]])
+    board.bus_servo_set_position(0.5, [[F1,668]])
+def ACEturn():
+    board.bus_servo_set_position(0.5, [[A1,332]])
+    board.bus_servo_set_position(0.5, [[C1,332]])
+    board.bus_servo_set_position(0.5, [[E1,332]])
+def ACECturn():
+    board.bus_servo_set_position(0.5, [[A1,668]])
+    board.bus_servo_set_position(0.5, [[C1,668]])
+    board.bus_servo_set_position(0.5, [[E1,668]])
+def BDFturn():
+    board.bus_servo_set_position(0.5, [[B1,332]])
+    board.bus_servo_set_position(0.5, [[D1,332]])
+    board.bus_servo_set_position(0.5, [[F1,332]])
 
-def turnPose():
-    stepTime = 0.25
-    # All 1 fan
-    board.bus_servo_set_position(stepTime, [[A1,500]])
-    board.bus_servo_set_position(stepTime, [[B1,500]])
-    board.bus_servo_set_position(stepTime, [[C1,500]])
-    board.bus_servo_set_position(stepTime, [[D1,500]])
-    board.bus_servo_set_position(stepTime, [[E1,500]])
-    board.bus_servo_set_position(stepTime, [[F1,500]])
-    # All 2 up
-    set_degree(A2, turn2degree, stepTime)
-    set_degree(B2, turn2degree, stepTime)
-    set_degree(C2, turn2degree, stepTime)
-    set_degree(D2, turn2degree, stepTime)
-    set_degree(E2, turn2degree, stepTime)
-    set_degree(F2, turn2degree, stepTime)
-    # All 3 down
-    set_degree(A3, turn3degree, stepTime)
-    set_degree(B3, turn3degree, stepTime)
-    set_degree(C3, turn3degree, stepTime)
-    set_degree(D3, turn3degree, stepTime)
-    set_degree(E3, turn3degree, stepTime)
-    set_degree(F3, turn3degree, stepTime)
+def Qsequence():
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    time.sleep(0.5)
+    BDFCturn()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    BDFDown()
+    time.sleep(0.5)
+    ACEUp()
+    board.bus_servo_set_position(0.25, [[E3.id,100]])
+    board.bus_servo_set_position(0.25, [[A3.id,900]])
+    board.bus_servo_set_position(0.25, [[C3.id,900]])
+    time.sleep(0.5)
+    BDFturn()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[E3.id,350]])
+    board.bus_servo_set_position(0.25, [[A3.id,650]])
+    board.bus_servo_set_position(0.25, [[C3.id,650]])
+    ACEDown()
+    time.sleep(0.5)
+
+def Esequence():
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    
+    time.sleep(0.5)
+    BDFturn()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    
+    BDFDown()
+    time.sleep(0.5)
+    ACEUp()
+    board.bus_servo_set_position(0.25, [[E3.id,100]])
+    board.bus_servo_set_position(0.25, [[A3.id,900]])
+    board.bus_servo_set_position(0.25, [[C3.id,900]])
+    time.sleep(0.5)
+    BDFCturn()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[E3.id,350]])
+    board.bus_servo_set_position(0.25, [[A3.id,650]])
+    board.bus_servo_set_position(0.25, [[C3.id,650]])
+    ACEDown()
+    time.sleep(0.5)
+
+def left90():
+    ACEDown()
+    BDFDown()
+    time.sleep(0.5)
+    Joint3out()
+    time.sleep(0.5)
+    Qsequence()
+    Qsequence()
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    time.sleep(0.5)
+    BDFNeutral()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    BDFDown()
+
+def left45():
+    ACEDown()
+    BDFDown()
+    time.sleep(0.5)
+    Joint3out()
+    time.sleep(0.5)
+    Qsequence()
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    time.sleep(0.5)
+    BDFNeutral()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    BDFDown()
+
+def right90():
+    ACEDown()
+    BDFDown()
+    time.sleep(0.5)
+    Joint3out()
+    time.sleep(0.5)
+    Esequence()
+    Esequence()
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    time.sleep(0.5)
+    BDFNeutral()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    BDFDown()
+
+def right45():
+    ACEDown()
+    BDFDown()
+    time.sleep(0.5)
+    Joint3out()
+    time.sleep(0.5)
+    Esequence()
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    time.sleep(0.5)
+    BDFNeutral()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
+    BDFDown()
+
+def turn180():
+    ACEDown()
+    BDFDown()
+    time.sleep(0.5)
+    Joint3out()
+    time.sleep(0.5)
+    Esequence()
+    Esequence()
+    Esequence()
+    Esequence()
+    BDFUp()
+    board.bus_servo_set_position(0.25, [[D3.id,100]])
+    board.bus_servo_set_position(0.25, [[F3.id,100]])
+    board.bus_servo_set_position(0.25, [[B3.id,900]])
+    time.sleep(0.5)
+    BDFNeutral()
+    time.sleep(0.5)
+    board.bus_servo_set_position(0.25, [[D3.id,350]])
+    board.bus_servo_set_position(0.25, [[F3.id,350]])
+    board.bus_servo_set_position(0.25, [[B3.id,650]])
 
 def crabPose():
-    angs = genAngles(13.45, 13.1, 16, 12, 0)
-    stepTime = 0.25
-    # Crab joint 1
-    board.bus_servo_set_position(stepTime, [[A1,325]])
-    board.bus_servo_set_position(stepTime, [[B1,500]])
-    board.bus_servo_set_position(stepTime, [[C1,685]])
-    board.bus_servo_set_position(stepTime, [[D1,325]])
-    board.bus_servo_set_position(stepTime, [[E1,500]])
-    board.bus_servo_set_position(stepTime, [[F1,685]])
-    # Crab joints 2 & 3 using generated angles
+    angs = genAngles(body, 13.1, 16, 12, step_height)
+    stepTime = 0.5
+
+    board.bus_servo_set_position(0.25, [[A1,325]])
+    board.bus_servo_set_position(0.25, [[B1,500]])
+    board.bus_servo_set_position(0.25, [[C1,685]])
+    board.bus_servo_set_position(0.25, [[D1,325]])
+    board.bus_servo_set_position(0.25, [[E1,500]])
+    board.bus_servo_set_position(0.25, [[F1,685]])
+
     set_degree(A2,angs[1][0][0],stepTime)
     set_degree(A3,angs[1][0][1],stepTime)
+
     set_degree(C2,angs[1][2][0],stepTime)
     set_degree(C3,angs[1][2][1],stepTime)
+
     set_degree(B2,angs[3][1][0],stepTime)
     set_degree(B3,angs[3][1][1],stepTime)
+
     set_degree(D2,angs[3][3][0],stepTime)
     set_degree(D3,angs[3][3][1],stepTime)
+
     set_degree(F2,angs[3][5][0],stepTime)
     set_degree(F3,angs[3][5][1],stepTime)
+
     set_degree(E2,angs[1][4][0],stepTime)
     set_degree(E3,angs[1][4][1],stepTime)
 
-def ACEPlace():
-    stepTime = 0.25
-    # Joint 2
-    set_degree(A2, turn2degree, stepTime)
-    set_degree(C2, turn2degree, stepTime)
-    set_degree(E2, turn2degree, stepTime)
+
+def turnPose():
+    # ACE 2 Down
+    board.bus_servo_set_position(0.5, [[A2.id,500]])
+    board.bus_servo_set_position(0.5, [[C2.id,500]])
+    board.bus_servo_set_position(0.5, [[E2.id,500]])
+    # BDF 2 Down
+    board.bus_servo_set_position(0.5, [[D2.id,500]])
+    board.bus_servo_set_position(0.5, [[F2.id,500]])
+    board.bus_servo_set_position(0.5, [[B2.id,500]])
+    # Joint 1
+    board.bus_servo_set_position(0.5, [[A1,500]])
+    board.bus_servo_set_position(0.5, [[B1,500]])
+    board.bus_servo_set_position(0.5, [[C1,500]])
+    board.bus_servo_set_position(0.5, [[D1,500]])
+    board.bus_servo_set_position(0.5, [[E1,500]])
+    board.bus_servo_set_position(0.5, [[F1,500]])
     # Joint 3
-    set_degree(A3, turn3degree, stepTime)
-    set_degree(C3, turn3degree, stepTime)
-    set_degree(E3, turn3degree, stepTime)
+    board.bus_servo_set_position(0.5, [[D3.id,350]])
+    board.bus_servo_set_position(0.5, [[E3.id,350]])
+    board.bus_servo_set_position(0.5, [[F3.id,350]])
+    board.bus_servo_set_position(0.5, [[A3.id,650]])
+    board.bus_servo_set_position(0.5, [[B3.id,650]])
+    board.bus_servo_set_position(0.5, [[C3.id,650]])
 
-def BDFPlace():
-    stepTime = 0.25
-    # Joint 2
-    set_degree(B2, turn2degree, stepTime)
-    set_degree(D2, turn2degree, stepTime)
-    set_degree(F2, turn2degree, stepTime)
-    # Joint 3
-    set_degree(B3, turn3degree, stepTime)
-    set_degree(D3, turn3degree, stepTime)
-    set_degree(F3, turn3degree, stepTime)
-
-def ACElift():
-    stepTime = 0.25
-    # Joint 2
-    set_degree(A2, 90, stepTime)
-    set_degree(C2, 90, stepTime)
-    set_degree(E2, 90, stepTime)
-    # Joint 3 (if needed)
-    board.bus_servo_set_position(stepTime, [[E3.id,up3pos]])
-    board.bus_servo_set_position(stepTime, [[A3.id,up3posINV]])
-    board.bus_servo_set_position(stepTime, [[C3.id,up3posINV]])
-
-def BDFlift():
-    stepTime = 0.25
-    # Joint 2
-    set_degree(B2, 90, stepTime)
-    set_degree(D2, 90, stepTime)
-    set_degree(F2, 90, stepTime)
-    # Joint 3 (if needed)
-    board.bus_servo_set_position(stepTime, [[D3.id,up3pos]])
-    board.bus_servo_set_position(stepTime, [[F3.id,up3pos]])
-    board.bus_servo_set_position(stepTime, [[B3.id,up3posINV]])
-
-def ACE1turn(direction):
-    stepTime = 0.5
-    if direction == 0:
-        # Turn
-        tickPos = allTickPos
-        board.bus_servo_set_position(stepTime, [[A1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[C1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[E1,tickPos]])
-    elif direction == 1:
-        # Neutral
-        board.bus_servo_set_position(stepTime, [[A1,500]])
-        board.bus_servo_set_position(stepTime, [[C1,500]])
-        board.bus_servo_set_position(stepTime, [[E1,500]])         
-    else:
-        # Counter turn
-        tickPos = 1000 - allTickPos
-        board.bus_servo_set_position(stepTime, [[A1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[C1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[E1,tickPos]])
-
-def BDF1turn(direction):
-    stepTime = 0.5
-    if direction == 0:
-        # Turn
-        tickPos = allTickPos
-        board.bus_servo_set_position(stepTime, [[B1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[D1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[F1,tickPos]])
-    elif direction == 1:
-        # Neutral
-        board.bus_servo_set_position(stepTime, [[B1,500]])
-        board.bus_servo_set_position(stepTime, [[D1,500]])
-        board.bus_servo_set_position(stepTime, [[F1,500]])
-    else:
-        # Counter turn
-        tickPos = 1000 - allTickPos
-        board.bus_servo_set_position(stepTime, [[B1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[D1,tickPos]])
-        board.bus_servo_set_position(stepTime, [[F1,tickPos]])
-
-def Qsequence():
-    # Begin sequencing
-    BDFlift()
-    time.sleep(0.4)
-    BDF1turn(2)
-    time.sleep(0.75)
-    BDFPlace()
-    time.sleep(0.4)
-    ACElift()
-    time.sleep(0.4)
-    BDF1turn(0)
-    time.sleep(0.75)
-    ACEPlace()
-    time.sleep(0.4)
-
-def Esequence():
-    # Begin sequencing
-    BDFlift()
-    time.sleep(0.4)
-    BDF1turn(0)
-    time.sleep(0.75)
-    BDFPlace()
-    time.sleep(0.4)
-    ACElift()
-    time.sleep(0.4)
-    BDF1turn(2)
-    time.sleep(0.75)
-    ACEPlace()
-    time.sleep(0.4)
-
-def left90():
-    delay = 0.4
-    # Verify turnPose
-    turnPose()
-    time.sleep(delay)
-    Qsequence()
-    Qsequence()
-    BDFlift()
-    time.sleep(delay)
-    BDF1turn(1)
-    time.sleep(0.75)
-    BDFPlace()
-
-def right90():
-    delay = 0.4
-    # Verify turnPose
-    turnPose()
-    time.sleep(delay)
-    Esequence()
-    Esequence()
-    BDFlift()
-    time.sleep(delay)
-    BDF1turn(1)
-    time.sleep(0.75)
-    BDFPlace()
-
-def turn180():
-    delay = 0.4
-    # Verify turnPose
-    turnPose()
-    time.sleep(delay)
-    Esequence()
-    Esequence()
-    Esequence()
-    Esequence()
-    BDFlift()
-    time.sleep(delay)
-    BDF1turn(1)
-    time.sleep(0.75)
-    BDFPlace()
 
 def shiftCrabTurn():
     # Leg Order A,D,F,C ???? Maybe A, D, C, F??
@@ -948,38 +1001,38 @@ def shiftCrabTurn():
     crabPose()
 
     # A up
-    set_degree(A2, 90, stepTime)
+    set_degree(A2,20,stepTime)
     time.sleep(delay)
-    set_degree(A3, turn3degree, stepTime)
+    board.bus_servo_set_position(stepTime, [[A3.id,650]])
     board.bus_servo_set_position(stepTime, [[A1,500]])
     time.sleep(delay)
 
     # A down, D up
-    set_degree(A2, turn2degree, stepTime)
-    set_degree(D2, 90,stepTime)
+    set_degree(A2,0,stepTime)
+    set_degree(D2,20,stepTime)
     time.sleep(delay)
-    set_degree(D3, turn3degree, stepTime)
+    board.bus_servo_set_position(stepTime, [[D3.id,350]])
     board.bus_servo_set_position(stepTime, [[D1,500]])
     time.sleep(delay)
 
     # D down, F up
-    set_degree(D2, turn2degree, stepTime)
-    set_degree(F2, 90,stepTime)
+    set_degree(D2,0,stepTime)
+    set_degree(F2,20,stepTime)
     time.sleep(delay)
-    set_degree(F3, turn3degree, stepTime)
+    board.bus_servo_set_position(stepTime, [[F3.id,350]])
     board.bus_servo_set_position(stepTime, [[F1,500]])
     time.sleep(delay)
 
     # F down, C up
-    set_degree(F2, turn2degree,stepTime)
-    set_degree(C2, 90,stepTime)
+    set_degree(F2,0,stepTime)
+    set_degree(C2,20,stepTime)
     time.sleep(delay)
-    set_degree(C3, turn3degree,stepTime)
+    board.bus_servo_set_position(stepTime, [[C3.id,650]])
     board.bus_servo_set_position(stepTime, [[C1,500]])
     time.sleep(delay)
 
     # C down
-    set_degree(C2, turn2degree,stepTime)
+    set_degree(C2,0,stepTime)
     time.sleep(delay)
 
     # Verify turnPose()
@@ -1029,11 +1082,7 @@ def shiftTurnCrab():
 
     # C down
     set_degree(C2,angs[1][2][0],stepTime)
-    time.sleep(delay)
-
-    # Verify crabPose()
-    crabPose()
-
+    time.sleep(delay+0.1)
 
 
 def crabWalk(s, target, allowance, distance):
@@ -1067,8 +1116,6 @@ s = sonar.Sonar()
 # Consider gaps in walls causing weird sensor readings and unnecessary Proportional adjustment
 def walk():
     crabReady()
-
-    # for i in range(8):
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1081,8 +1128,9 @@ def walk():
         strideA6(stride)
     else:
         print("Reading", s.getDistance())
-        crabWalk(s, 233, 10, stride)
-    
+        crabWalk(s, 233, 20, stride)
+
+
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1090,13 +1138,11 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-
     if s.getDistance() > 350:
         strideA6(stride)
     else:
         print("Reading", s.getDistance())
-        crabWalk(s, 233, 10, stride)
-    
+        crabWalk(s, 233, 20, stride)
     if not start:
         ("resetting and stopping")
         crabReady()
@@ -1104,12 +1150,11 @@ def walk():
         time.sleep(1)
         print('breaking loop')
         return
-
     if s.getDistance() > 350:
-        strideA6(stride)
+        strideA6(stride-4)
     else:
         print("Reading", s.getDistance())
-        crabWalk(s, 233, 10, stride-4)
+        crabWalk(s, 233, 20, stride-2)
     time.sleep(0.3)
     crabPose()    
 
@@ -1176,10 +1221,13 @@ def breadth_first_search(time_map, start, end):
 				queue.append((neighbor, path + [neighbor]))
 
 	return None
-
-    
              
 def go_direction(curr, to):
+    if not start:
+                ("resetting and stopping")
+                crabReady()
+                print('breaking loop')
+                return
     print("Going from", curr, "to", to)
     if curr - to == 0:
         print("Staying")
@@ -1201,69 +1249,265 @@ def go_direction(curr, to):
         turn180()
         shiftTurnCrab()
 
+def walk_path(map, start, goal, start_d, goal_d):
+
+    instructions = breadth_first_search(map, start, goal)
+    if instructions:
+        print(instructions)
+        start = instructions[0]
+        current_direction = start_d
+
+        for c in instructions[1:]:
+            if not start:
+                ("resetting and stopping")
+                crabReady()
+                print('breaking loop')
+                return
+            print("Current direction", current_direction)
+            if start[0] > c[0]: # UP
+                print("Going up", c, 1)
+                
+                go_direction(current_direction, 1)
+                current_direction = 1
+                walk()
+            
+            elif start[0] < c[0]: #DOWN
+                print("Going down", c, 3)
+                go_direction(current_direction, 3)
+                current_direction = 3
+                walk()
+                
+            elif start[1] > c[1]: # LEFT
+                print("Going left", c, 4)
+                go_direction(current_direction, 4)
+                
+                current_direction = 4
+                walk()
+            else:
+                print("Going right", c, 2)
+                go_direction(current_direction, 2)
+                current_direction = 2
+                walk()
+                
+
+            start = c
+
+    go_direction(current_direction, goal_d)
+    return goal_d
+
+
+def get_next_coords(coords, d, map):
+    if d == 1 and (coords[0]-1 >= 0):
+        return (coords[0]-1, coords[1])
+    elif d == 2 and (coords[1]+1 <= map.getCostmapSize(False)):
+        return (coords[0], coords[1]+1)
+    elif d == 3 and (coords[0]+1 <= map.getCostmapSize(True)):
+        return (coords[0]+1, coords[1])
+    elif d == 4 and (coords[1]-1 >= 0):
+        print(coords)
+        return (coords[0], coords[1]-1)
+    else:
+        print(d)
+        print(1, (coords[0]-1, coords[1]))
+        print(2, (coords[0], coords[1]+1))
+        print(3, (coords[0]+1, coords[1]))
+        print(4, (coords[0], coords[1]-1))
+        return None
+
+
+# Direction mappings
+directions = {1: "North", 2: "East", 3: "South", 4: "West"}
+
+# Movement mapping: (x, y)
+move_offsets = {
+    1: (0, 1),  # North (+y)
+    2: (1, 0),  # East (+x)
+    3: (0, -1), # South (-y)
+    4: (-1, 0)  # West (-x)
+}
+
+# Simulated "sensor" function (real robots would use actual sensor readings)
+def get_tiles(coords, facing, map):
+    print("We are facing", facing)
+    if not start:
+            crabReady()
+            print('DIE')
+            return
+    
+    """Simulates scanning the surroundings upon reaching a tile."""
+    next = []
+
+    board.bus_servo_set_position(0.25, [[21, 1000-875]]) # Right
+    time.sleep(1)
+    print("Reading right")
+    new_d = facing+1
+    if new_d > 4:
+        facing -= 4
+    if measure_distance() > 400:
+        
+        print("New d:", new_d)
+        next_tile = get_next_coords(coords, new_d, map)
+        print("Right is free:", next_tile)
+        if next_tile:
+            next.append((next_tile, new_d))
+    else:
+        print("Setting obstacle right at", coords[0], coords[1], 1, new_d)
+        map.setObstacle(coords[0], coords[1], 1, new_d)
+
+    board.bus_servo_set_position(0.25, [[21, 500]]) # Forward 
+    time.sleep(1)
+    print("Reading forward")
+    # new_d = facing
+    if measure_distance() > 400:
+        next_tile = get_next_coords(coords, facing, map)
+        print("Forward is free:", next_tile)
+        if next_tile:
+            next.append((next_tile, facing))
+    else:
+        print("Setting obstacle forward at", coords[0], coords[1], 1, facing)
+        map.setObstacle(coords[0], coords[1], 1, facing)
+
+    board.bus_servo_set_position(0.25, [[21, 875]]) # Left
+    time.sleep(1)
+    print("Reading left")
+    new_d = facing-1
+    if new_d < 1:
+        new_d += 4
+    if measure_distance() > 500:
+        print("Left is free:")
+        
+        
+        print("newd", new_d)
+        
+        next_tile = get_next_coords(coords, new_d, map)
+        print("next tile:, ", next_tile)
+        if next_tile:
+            next.append((next_tile, new_d))
+    else:
+        print("Setting obstacle left at", coords[0], coords[1], 1, new_d)
+        map.setObstacle(coords[0], coords[1], 1, new_d)
+    
+    board.bus_servo_set_position(0.25, [[21, 1000-875]])
+
+    
+
+    if None in next:
+        print("ERROR: Out of bounds mapping (look)")
+    print("NEXT TILES", next)
+    return next
+
+
+def explore_maze(start, end, map):
+    """DFS-based real-time maze exploration, dynamically scanning surroundings."""
+    orientation = 2  # Start facing east, north and west always blocked
+    stack = [(start, orientation)]
+    visited = set()
+    # print("START", stack)
+
+    old_tile, old_orientation = start, orientation
+
+    while stack:
+    # for i in range(4):
+        
+        if not start:
+            crabReady()
+            print('DIE')
+            return
+        # print("STACK:", stack)
+        tile, orientation = stack.pop()
+
+        # Execute movement only when a tile is actually reached
+        map.printObstacleMap()
+        print("Calling walk_path", map, old_tile, tile, old_orientation, orientation)
+        orientation = walk_path(map, old_tile, tile, old_orientation, orientation)
+
+        print(f"### At tile {tile}, facing {directions[orientation]}")
+
+        if tile == end:
+            print("Reached destination!")
+            return
+
+        visited.add(tile)
+
+        # Scan the surroundings every time a new tile is visited
+        tiles = get_tiles(tile, orientation, map)
+        print("TILES ARE NOW", tiles)
+
+        if not tiles:  # Dead end, backtrack
+            print(f"Dead end at {tile}, backtracking...")
+            old_tile, old_orientation = tile, orientation
+            continue  # Skip this iteration
+
+        # Add tiles to stack in the order they should be explored
+        for valid_tile, valid_orientation in tiles:
+            # print("LOOK:",valid_orientation, valid_tile)
+            if valid_tile not in visited:
+                stack.append((valid_tile, valid_orientation))  # Push to stack
+            # if tile not in visited:
+            #     stack.append(tile)
+            #     print("STACK")
+
+        old_tile, old_orientation = tile, orientation
+
+    print("Maze fully explored or no path found.")
+
+
 
 ## Main program
 
 def main():
     your_map = map_301.CSME301Map()
 
+    your_map.clearObstacleMap()
     your_map.printObstacleMap()
-    your_map.costmap_size_col
-    x, y, d = map(int, input("Start coords x y d:   ").split(" "))
-    goal_x, goal_y, goal_d = map(int, input("Goal coords x y d:   ").split(" "))
+    x, y, d = 0, 0, 1
+
+    # print(get_next_coords((x, y), d, your_map))
+
+    shiftCrabTurn()
+    right90()
+    shiftTurnCrab()
+    d = 2
+
+    explore_maze((0, 0), None, your_map)
+
+
+
 
     
     
-    instructions = breadth_first_search(your_map, (x, y), (goal_x, goal_y))
-    print(instructions)
-    start = instructions[0]
-    current_direction = d
+import termios, tty
 
-    for c in instructions[1:]:
-        if not start:
-            ("resetting and stopping")
-            crabReady()
-            print('breaking loop')
-            return
-        print("Current direction", current_direction)
-        if start[0] > c[0]: # UP
-            print("Going up", c, 1)
-            
-            go_direction(current_direction, 1)
-            current_direction = 1
-            walk()
+def wait_key():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
         
-        elif start[0] < c[0]: #DOWN
-            print("Going down", c, 3)
-            go_direction(current_direction, 3)
-            current_direction = 3
-            walk()
-            
-        elif start[1] > c[1]: # LEFT
-            print("Going left", c, 4)
-            go_direction(current_direction, 4)
-            
-            current_direction = 4
-            walk()
-        else:
-            print("Going right", c, 2)
-            go_direction(current_direction, 2)
-            current_direction = 2
-            walk()
-            
 
-        start = c
+def exit_on_key():
+    print("press any key to exit")
+    wait_key()
+    print("exiting...")
 
-    go_direction(current_direction, goal_d)
-        
+data = pd.read_csv("data.csv")
+print(data)
+
+def get_distance(goal):
+    pass
+
 
 
 if __name__ == "__main__":
-    board.bus_servo_set_position(0.25, [[21, 1000-875]])
-    main()
+    thread = threading.Thread(target=exit_on_key)
+    thread.daemon = True
+    thread.start()
     
-    crabPose()
-    # board.bus_servo_set_position(0.25, [[21, 875]]) # Forward
-    # board.bus_servo_set_position(0.25, [[21, 1000-875]]) # Backward
-    # board.bus_servo_set_position(0.25, [[21, 500]]) # Right
+    
+    # goal = input("Goal Distance:\t")
+    # battery = input("Current battery:\t")
 

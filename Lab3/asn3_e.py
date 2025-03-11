@@ -304,10 +304,10 @@ def genAngles(i_body, i_height, i_limit, i_stride, i_stepheight):
     return[frame1angs,frame2angs,frame3angs,frame4angs]
 
 # variables in cm
-step_limit = 17 #changeable MIN 15
-stride = 7.5 #changeable ????? MAX 30-step_limit
-stride_count = 6
-stride_remainder = 0.5
+step_limit = 16.2 #changeable MIN 15
+stride = 2.7 #changeable ????? MAX 30-step_limit
+stride_count = 2
+stride_remainder = 0.6
 
 assert (step_limit + stride) <= 30
 

@@ -40,8 +40,8 @@ def get_distance(goal, volt):
 
     return newdata
 
-goal = 32
-volt = 11.5
+goal = float(input("Goal distance: "))
+volt = float(input("Voltage: "))
 
 data["weight"] = 1 / get_distance(goal, volt)["sum"]
 data["weight"]= data["weight"] / data["weight"].sum()
@@ -370,6 +370,10 @@ stride = data["Stride (1 - 30-steplimit) cm"].sum() / weight #changeable ????? M
 a = data["Stride Count (1 - )"].sum() / weight
 stride_count = int(a)
 stride_remainder = a - stride_count
+
+print("Step limit:", step_limit)
+print("Stride:", stride)
+print("Stride count:", a)
 
 assert (step_limit + stride) <= 30
 

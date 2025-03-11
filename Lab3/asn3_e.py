@@ -7,6 +7,62 @@ import os
 import ros_robot_controller_sdk as rrc
 import sympy as sp
 
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+
+data = pd.read_csv("/Users/sebastienjames/Documents/CS301/Lab3/data.csv")
+data.dropna(inplace=True)
+
+data = data[data["Step limit (15-(30-stride)cm)"] < 20]
+data = data[data["Stride (1 - 30-steplimit) cm"] < 14]
+# data = data[data["Stride Count (1 - )"] == 5]
+# data = data[data["Step limit (15-(30-stride)cm)"] == 17]
+
+data["dist_per_step"] = data["Distance (cm)"] / data["Stride Count (1 - )"]
+# print(data)
+
+sns.scatterplot(data=data, x="Distance (cm)", y="Battery (volts)", hue="Step limit (15-(30-stride)cm)")
+# print(data)
+def get_distance(goal, volt):
+    newdata = data[["Distance (cm)", "Battery (volts)"]][:]
+    sum_values = newdata.sum(axis=0)
+    newdata = newdata / sum_values
+
+    newdata["Distance (cm)"] -= goal / sum_values["Distance (cm)"]
+    newdata["Distance (cm)"] *= newdata["Distance (cm)"]
+    newdata["Battery (volts)"] -= volt / sum_values["Battery (volts)"]
+    newdata["Battery (volts)"] *= newdata["Battery (volts)"]
+
+    newdata["sum"] = 2*newdata["Distance (cm)"] + newdata["Battery (volts)"]
+    newdata["sum"] = np.sqrt(newdata["sum"])
+
+    return newdata
+
+goal = 32
+volt = 11.5
+
+data["weight"] = 1 / get_distance(goal, volt)["sum"]
+data["weight"]= data["weight"] / data["weight"].sum()
+
+data = data.sort_values("weight", ascending=False)
+
+# print(data.head(5))
+n = 3
+
+data["Step limit (15-(30-stride)cm)"] *= data["weight"]
+data["Stride (1 - 30-steplimit) cm"] *= data["weight"]
+data["Stride Count (1 - )"] *= data["weight"]
+
+data = data.head(n)
+print(data)
+
+weight = data["weight"].sum()
+
+
+
+
 board = rrc.Board()
 start = True
 
@@ -303,11 +359,17 @@ def genAngles(i_body, i_height, i_limit, i_stride, i_stepheight):
 
     return[frame1angs,frame2angs,frame3angs,frame4angs]
 
+print("Step Limit:", )
+print("Stride:", )
+print("Stride Count:", )
+
+
 # variables in cm
-step_limit = 16.2 #changeable MIN 15
-stride = 2.7 #changeable ????? MAX 30-step_limit
-stride_count = 2
-stride_remainder = 0.6
+step_limit = data["Step limit (15-(30-stride)cm)"].sum() / weight #changeable MIN 15
+stride = data["Stride (1 - 30-steplimit) cm"].sum() / weight #changeable ????? MAX 30-step_limit
+a = data["Stride Count (1 - )"].sum() / weight
+stride_count = int(a)
+stride_remainder = a - stride_count
 
 assert (step_limit + stride) <= 30
 
